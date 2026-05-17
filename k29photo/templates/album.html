@@ -1,0 +1,42 @@
+{% extends 'base.html' %}
+{% block title %}{{ album.name }} — k29photo{% endblock %}
+{% block content %}
+<div class="album-header">
+  <div>
+    <h1>{{ album.name }}</h1>
+    <p class="meta">by {{ album.owner_name }} &bull; {{ album.creation_date }}</p>
+  </div>
+  {% if session.user_id == album.owner_id %}
+  <div class="album-actions">
+    <a href="{{ url_for('photos.upload_photo') }}" class="btn btn-outline btn-sm">+ Add Photo</a>
+    <form action="{{ url_for('albums.delete_album', album_id=album.album_id) }}" method="post"
+          onsubmit="return confirm('Delete this entire album and all its photos?')">
+      <button type="submit" class="btn btn-danger btn-sm">Delete Album</button>
+    </form>
+  </div>
+  {% endif %}
+</div>
+
+{% if photos %}
+<div class="photo-grid">
+  {% for photo in photos %}
+  <a href="{{ url_for('photos.view_photo', photo_id=photo.photo_id) }}" class="photo-card">
+    <div class="photo-thumb">
+      <img src="{{ url_for('photos.serve_image', photo_id=photo.photo_id) }}"
+           alt="{{ photo.caption }}" loading="lazy">
+    </div>
+    <div class="photo-info">
+      <p class="photo-caption">{{ photo.caption or 'Untitled' }}</p>
+      <p class="photo-meta">{{ photo.like_count }} ♥ &bull; {{ photo.comment_count }} 💬</p>
+    </div>
+  </a>
+  {% endfor %}
+</div>
+{% else %}
+<p class="empty">This album has no photos yet.
+  {% if session.user_id == album.owner_id %}
+    <a href="{{ url_for('photos.upload_photo') }}">Upload one now.</a>
+  {% endif %}
+</p>
+{% endif %}
+{% endblock %}

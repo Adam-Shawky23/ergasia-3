@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>{% block title %}k29photo{% endblock %}</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display&family=DM+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+
+<nav class="navbar">
+  <a href="{{ url_for('main.index') }}" class="brand">k29<span>photo</span></a>
+  <div class="nav-links">
+    <a href="{{ url_for('main.browse') }}">Browse</a>
+    <a href="{{ url_for('tags.popular_tags') }}">Tags</a>
+    <a href="{{ url_for('photos.search') }}">Search</a>
+    <a href="{{ url_for('comments.search_comments') }}">Comments</a>
+    <a href="{{ url_for('main.activity') }}">Top Users</a>
+    {% if session.user_id %}
+      <a href="{{ url_for('albums.my_albums') }}">My Albums</a>
+      <a href="{{ url_for('photos.upload_photo') }}">Upload</a>
+      <a href="{{ url_for('friends.my_friends') }}">Friends</a>
+      <a href="{{ url_for('recommendations.recommendations') }}">For You</a>
+      <a href="{{ url_for('auth.logout') }}" class="btn-nav">Logout</a>
+    {% else %}
+      <a href="{{ url_for('auth.login') }}" class="btn-nav">Login</a>
+      <a href="{{ url_for('auth.register') }}" class="btn-nav btn-primary">Register</a>
+    {% endif %}
+  </div>
+</nav>
+
+<main class="container">
+  {% with messages = get_flashed_messages(with_categories=true) %}
+    {% if messages %}
+      <div class="flashes">
+        {% for category, message in messages %}
+          <div class="flash flash-{{ category }}">{{ message }}</div>
+        {% endfor %}
+      </div>
+    {% endif %}
+  {% endwith %}
+
+  {% block content %}{% endblock %}
+</main>
+
+<footer class="footer">
+  <p>k29photo &mdash; K29 Database Design &amp; Use, Spring 2026</p>
+</footer>
+
+</body>
+</html>

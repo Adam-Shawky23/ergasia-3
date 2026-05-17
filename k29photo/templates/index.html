@@ -1,0 +1,64 @@
+{% extends 'base.html' %}
+{% block title %}k29photo — Home{% endblock %}
+
+{% block content %}
+<div class="hero">
+  <h1>Share your world,<br><em>one frame at a time.</em></h1>
+  <p>Browse thousands of photos from across Greece and beyond.</p>
+  <div class="hero-actions">
+    <a href="{{ url_for('main.browse') }}" class="btn btn-primary">Browse Albums</a>
+    {% if not session.user_id %}
+      <a href="{{ url_for('auth.register') }}" class="btn btn-outline">Join Free</a>
+    {% else %}
+      <a href="{{ url_for('photos.upload_photo') }}" class="btn btn-outline">Upload Photo</a>
+    {% endif %}
+  </div>
+</div>
+
+<div class="page-grid">
+  <section class="main-col">
+    <h2 class="section-title">Recent Photos</h2>
+    {% if recent_photos %}
+      <div class="photo-grid">
+        {% for photo in recent_photos %}
+          <a href="{{ url_for('photos.view_photo', photo_id=photo.photo_id) }}" class="photo-card">
+            <div class="photo-thumb">
+              <img src="{{ url_for('photos.serve_image', photo_id=photo.photo_id) }}"
+                   alt="{{ photo.caption }}" loading="lazy">
+            </div>
+            <div class="photo-info">
+              <p class="photo-caption">{{ photo.caption or 'Untitled' }}</p>
+              <p class="photo-meta">{{ photo.owner_name }} &bull; {{ photo.like_count }} ♥</p>
+            </div>
+          </a>
+        {% endfor %}
+      </div>
+    {% else %}
+      <p class="empty">No photos yet. <a href="{{ url_for('auth.register') }}">Register</a> and upload the first one!</p>
+    {% endif %}
+  </section>
+
+  <aside class="sidebar">
+    <div class="sidebar-card">
+      <h3>Popular Tags</h3>
+      <div class="tag-cloud">
+        {% for tag in popular_tags %}
+          <a href="{{ url_for('tags.view_tag', tag_name=tag.tag_name) }}" class="tag">
+            #{{ tag.tag_name }} <span class="tag-count">{{ tag.cnt }}</span>
+          </a>
+        {% endfor %}
+      </div>
+      <a href="{{ url_for('tags.popular_tags') }}" class="see-all">See all tags →</a>
+    </div>
+
+    <div class="sidebar-card">
+      <h3>Quick Search</h3>
+      <form action="{{ url_for('photos.search') }}" method="get" class="search-form">
+        <input type="text" name="q" placeholder="e.g. friends nafplion" class="input">
+        <button type="submit" class="btn btn-primary btn-sm">Search</button>
+      </form>
+      <p class="hint">Use multiple tags separated by spaces for AND search.</p>
+    </div>
+  </aside>
+</div>
+{% endblock %}

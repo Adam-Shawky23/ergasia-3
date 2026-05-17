@@ -1,0 +1,96 @@
+{% extends 'base.html' %}
+{% block title %}{{ photo.caption or 'Photo' }} — k29photo{% endblock %}
+
+{% block content %}
+<div class="breadcrumb">
+  <a href="{{ url_for('main.browse') }}">Browse</a> /
+  <a href="{{ url_for('albums.view_album', album_id=photo.album_id) }}">{{ photo.album_name }}</a> /
+  <span>{{ photo.caption or 'Photo' }}</span>
+</div>
+
+<div class="photo-detail">
+  <div class="photo-full">
+    <img src="{{ url_for('photos.serve_image', photo_id=photo.photo_id) }}"
+         alt="{{ photo.caption }}" class="full-image">
+  </div>
+
+  <div class="photo-sidebar">
+    <h1 class="photo-title">{{ photo.caption or 'Untitled' }}</h1>
+    <p class="photo-owner">by <strong>{{ photo.owner_name }}</strong>
+      in <a href="{{ url_for('albums.view_album', album_id=photo.album_id) }}">{{ photo.album_name }}</a>
+    </p>
+
+    <!-- Tags -->
+    {% if tags %}
+    <div class="tag-list">
+      {% for tag in tags %}
+        <a href="{{ url_for('tags.view_tag', tag_name=tag.tag_name) }}" class="tag">#{{ tag.tag_name }}</a>
+      {% endfor %}
+    </div>
+    {% endif %}
+
+    <!-- Likes -->
+    <div class="likes-section">
+      <span class="like-count">{{ likes|length }} ♥</span>
+      {% if session.user_id and session.user_id != photo.owner_id %}
+        {% if user_liked %}
+          <form action="{{ url_for('photos.unlike_photo', photo_id=photo.photo_id) }}" method="post" style="display:inline">
+            <button type="submit" class="btn btn-sm btn-liked">Unlike</button>
+          </form>
+        {% else %}
+          <form action="{{ url_for('photos.like_photo', photo_id=photo.photo_id) }}" method="post" style="display:inline">
+            <button type="submit" class="btn btn-sm btn-outline">♥ Like</button>
+          </form>
+        {% endif %}
+      {% endif %}
+    </div>
+
+    {% if likes %}
+    <div class="likers">
+      <p class="hint">Liked by:
+        {% for l in likes %}
+          {{ l.full_name }}{% if not loop.last %}, {% endif %}
+        {% endfor %}
+      </p>
+    </div>
+    {% endif %}
+
+    <!-- Delete (owner only) -->
+    {% if session.user_id == photo.owner_id %}
+    <form action="{{ url_for('photos.delete_photo', photo_id=photo.photo_id) }}" method="post"
+          onsubmit="return confirm('Delete this photo?')">
+      <button type="submit" class="btn btn-sm btn-danger">Delete Photo</button>
+    </form>
+    {% endif %}
+  </div>
+</div>
+
+<!-- Comments -->
+<section class="comments-section">
+  <h2>Comments ({{ comments|length }})</h2>
+
+  {% for c in comments %}
+  <div class="comment">
+    <div class="comment-author">{{ c.author }}</div>
+    <div class="comment-text">{{ c.content }}</div>
+    <div class="comment-date">{{ c.post_date }}</div>
+  </div>
+  {% endfor %}
+
+  {% if not comments %}
+    <p class="empty">No comments yet. Be the first!</p>
+  {% endif %}
+
+  <!-- Post comment form -->
+  <div class="comment-form">
+    <h3>Leave a comment</h3>
+    <form action="{{ url_for('comments.post_comment', photo_id=photo.photo_id) }}" method="post">
+      {% if not session.user_id %}
+        <input type="text" name="guest_name" placeholder="Your name (required)" class="input" required>
+      {% endif %}
+      <textarea name="content" placeholder="Write your comment..." class="input textarea" required></textarea>
+      <button type="submit" class="btn btn-primary btn-sm">Post Comment</button>
+    </form>
+  </div>
+</section>
+{% endblock %}

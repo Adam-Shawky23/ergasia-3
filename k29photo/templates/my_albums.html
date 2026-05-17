@@ -1,0 +1,20 @@
+{% extends 'base.html' %}
+{% block title %}My Albums — k29photo{% endblock %}
+{% block content %}
+<div class="page-header">
+  <h1>My Albums</h1>
+  <a href="{{ url_for('albums.create_album') }}" class="btn btn-primary">+ New Album</a>
+</div>
+<div class="album-grid">
+  {% for a in albums %}
+  <a href="{{ url_for('albums.view_album', album_id=a.album_id) }}" class="album-card">
+    <div class="album-info">
+      <h3>{{ a.name }}</h3>
+      <p class="meta">{{ a.photo_count }} photo{% if a.photo_count != 1 %}s{% endif %} &bull; {{ a.creation_date }}</p>
+    </div>
+  </a>
+  {% else %}
+  <p class="empty">You have no albums yet. <a href="{{ url_for('albums.create_album') }}">Create one!</a></p>
+  {% endfor %}
+</div>
+{% endblock %}

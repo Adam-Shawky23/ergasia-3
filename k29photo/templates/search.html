@@ -1,0 +1,32 @@
+{% extends 'base.html' %}
+{% block title %}Search Photos — k29photo{% endblock %}
+{% block content %}
+<h1 class="page-title">Photo Search</h1>
+<form action="{{ url_for('photos.search') }}" method="get" class="search-bar">
+  <input type="text" name="q" value="{{ query }}" placeholder="e.g. friends nafplion" class="input input-lg" autofocus>
+  <button type="submit" class="btn btn-primary">Search</button>
+</form>
+<p class="hint">Enter multiple tags to find photos matching ALL of them (AND search).</p>
+
+{% if query %}
+  <h2 class="results-title">{{ results|length }} result{% if results|length != 1 %}s{% endif %} for "{{ query }}"</h2>
+  {% if results %}
+  <div class="photo-grid">
+    {% for photo in results %}
+    <a href="{{ url_for('photos.view_photo', photo_id=photo.photo_id) }}" class="photo-card">
+      <div class="photo-thumb">
+        <img src="{{ url_for('photos.serve_image', photo_id=photo.photo_id) }}"
+             alt="{{ photo.caption }}" loading="lazy">
+      </div>
+      <div class="photo-info">
+        <p class="photo-caption">{{ photo.caption or 'Untitled' }}</p>
+        <p class="photo-meta">{{ photo.owner_name }} &bull; {{ photo.like_count }} ♥</p>
+      </div>
+    </a>
+    {% endfor %}
+  </div>
+  {% else %}
+    <p class="empty">No photos found. Try different tags.</p>
+  {% endif %}
+{% endif %}
+{% endblock %}

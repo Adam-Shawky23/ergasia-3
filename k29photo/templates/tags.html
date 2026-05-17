@@ -1,0 +1,16 @@
+{% extends 'base.html' %}
+{% block title %}Popular Tags — k29photo{% endblock %}
+{% block content %}
+<h1 class="page-title">Popular Tags</h1>
+<div class="tag-cloud large">
+  {% for tag in tags %}
+    <a href="{{ url_for('tags.view_tag', tag_name=tag.tag_name) }}"
+       class="tag" style="font-size: {{ [0.85 + tag.photo_count * 0.08, 1.6]|min }}rem">
+      #{{ tag.tag_name }}
+      <span class="tag-count">{{ tag.photo_count }}</span>
+    </a>
+  {% else %}
+    <p class="empty">No tags yet.</p>
+  {% endfor %}
+</div>
+{% endblock %}

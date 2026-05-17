@@ -1,0 +1,59 @@
+{% extends 'base.html' %}
+{% block title %}Friends — k29photo{% endblock %}
+{% block content %}
+<h1 class="page-title">Friends</h1>
+
+<div class="page-grid">
+  <section class="main-col">
+    <h2>My Friends ({{ friends|length }})</h2>
+    {% if friends %}
+    <div class="user-list">
+      {% for f in friends %}
+      <div class="user-card">
+        <div class="user-info">
+          <strong>{{ f.full_name }}</strong>
+          <span class="meta">{{ f.hometown or '' }}</span>
+        </div>
+        <form action="{{ url_for('friends.remove_friend', friend_id=f.user_id) }}" method="post">
+          <button type="submit" class="btn btn-sm btn-outline">Unfollow</button>
+        </form>
+      </div>
+      {% endfor %}
+    </div>
+    {% else %}
+      <p class="empty">You are not following anyone yet. Search for users below!</p>
+    {% endif %}
+  </section>
+
+  <aside class="sidebar">
+    <div class="sidebar-card">
+      <h3>Find Users</h3>
+      <form action="{{ url_for('friends.my_friends') }}" method="get" class="search-form">
+        <input type="text" name="q" value="{{ search_q }}" placeholder="Name or email..." class="input">
+        <button type="submit" class="btn btn-primary btn-sm">Search</button>
+      </form>
+    </div>
+
+    {% if search_results %}
+    <div class="sidebar-card">
+      <h3>Results for "{{ search_q }}"</h3>
+      {% for u in search_results %}
+      <div class="user-card compact">
+        <div class="user-info">
+          <strong>{{ u.full_name }}</strong>
+          <span class="meta">{{ u.hometown or '' }}</span>
+        </div>
+        {% if u.already_friend %}
+          <span class="badge">Following</span>
+        {% else %}
+          <form action="{{ url_for('friends.add_friend', friend_id=u.user_id) }}" method="post">
+            <button type="submit" class="btn btn-sm btn-primary">+ Follow</button>
+          </form>
+        {% endif %}
+      </div>
+      {% endfor %}
+    </div>
+    {% endif %}
+  </aside>
+</div>
+{% endblock %}

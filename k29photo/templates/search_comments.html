@@ -1,0 +1,29 @@
+{% extends 'base.html' %}
+{% block title %}Search Comments — k29photo{% endblock %}
+{% block content %}
+<h1 class="page-title">Comment Search</h1>
+<form action="{{ url_for('comments.search_comments') }}" method="get" class="search-bar">
+  <input type="text" name="q" value="{{ query }}" placeholder="Enter exact comment text..." class="input input-lg" autofocus>
+  <button type="submit" class="btn btn-primary">Search</button>
+</form>
+<p class="hint">Finds users who have posted comments that exactly match your query.</p>
+
+{% if query %}
+  <h2 class="results-title">{{ results|length }} user{% if results|length != 1 %}s{% endif %} matched "{{ query }}"</h2>
+  {% if results %}
+  <table class="table">
+    <thead><tr><th>User</th><th>Matching Comments</th></tr></thead>
+    <tbody>
+      {% for r in results %}
+      <tr>
+        <td>{{ r.full_name }}</td>
+        <td>{{ r.match_count }}</td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+  {% else %}
+    <p class="empty">No users found with that exact comment text.</p>
+  {% endif %}
+{% endif %}
+{% endblock %}

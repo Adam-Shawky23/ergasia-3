@@ -1,0 +1,6 @@
+Copy
+
+flask
+psycopg2-binary
+werkzeug
+ 

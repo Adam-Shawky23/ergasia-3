@@ -1,0 +1,33 @@
+{% extends 'base.html' %}
+{% block title %}Upload Photo — k29photo{% endblock %}
+{% block content %}
+<div class="form-page">
+  <h1>Upload Photo</h1>
+  {% if not albums %}
+    <p class="empty">You need an album first. <a href="{{ url_for('albums.create_album') }}">Create one.</a></p>
+  {% else %}
+  <form action="{{ url_for('photos.upload_photo') }}" method="post"
+        enctype="multipart/form-data" class="form-card">
+    <label>Album *
+      <select name="album_id" class="input" required>
+        {% for a in albums %}
+          <option value="{{ a.album_id }}">{{ a.name }}</option>
+        {% endfor %}
+      </select>
+    </label>
+    <label>Photo File *
+      <input type="file" name="photo" class="input" accept="image/*" required>
+    </label>
+    <label>Caption
+      <input type="text" name="caption" class="input" placeholder="Describe your photo...">
+    </label>
+    <label>Tags
+      <input type="text" name="tags" class="input"
+             placeholder="e.g. nafplion sea sunset (space or comma separated)">
+      <span class="hint">Lowercase only, no spaces within a tag.</span>
+    </label>
+    <button type="submit" class="btn btn-primary">Upload</button>
+  </form>
+  {% endif %}
+</div>
+{% endblock %}

@@ -1,0 +1,36 @@
+{% extends 'base.html' %}
+{% block title %}#{{ tag_name }} — k29photo{% endblock %}
+{% block content %}
+<div class="page-header">
+  <h1>#{{ tag_name }}</h1>
+  {% if session.user_id %}
+  <div class="toggle-view">
+    <a href="{{ url_for('tags.view_tag', tag_name=tag_name, view='all') }}"
+       class="btn btn-sm {% if view_mode == 'all' %}btn-primary{% else %}btn-outline{% endif %}">All Photos</a>
+    <a href="{{ url_for('tags.view_tag', tag_name=tag_name, view='mine') }}"
+       class="btn btn-sm {% if view_mode == 'mine' %}btn-primary{% else %}btn-outline{% endif %}">My Photos</a>
+  </div>
+  {% endif %}
+</div>
+
+{% if not tag %}
+  <p class="empty">Tag "#{{ tag_name }}" does not exist.</p>
+{% elif photos %}
+  <div class="photo-grid">
+    {% for photo in photos %}
+    <a href="{{ url_for('photos.view_photo', photo_id=photo.photo_id) }}" class="photo-card">
+      <div class="photo-thumb">
+        <img src="{{ url_for('photos.serve_image', photo_id=photo.photo_id) }}"
+             alt="{{ photo.caption }}" loading="lazy">
+      </div>
+      <div class="photo-info">
+        <p class="photo-caption">{{ photo.caption or 'Untitled' }}</p>
+        <p class="photo-meta">{{ photo.owner_name }} &bull; {{ photo.like_count }} ♥</p>
+      </div>
+    </a>
+    {% endfor %}
+  </div>
+{% else %}
+  <p class="empty">No {% if view_mode == 'mine' %}of your {% endif %}photos tagged with "#{{ tag_name }}".</p>
+{% endif %}
+{% endblock %}

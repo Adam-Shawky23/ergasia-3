@@ -1,0 +1,18 @@
+{% extends 'base.html' %}
+{% block title %}Browse Albums — k29photo{% endblock %}
+{% block content %}
+<h1 class="page-title">All Albums</h1>
+<div class="album-grid">
+  {% for a in albums %}
+  <a href="{{ url_for('albums.view_album', album_id=a.album_id) }}" class="album-card">
+    <div class="album-info">
+      <h3>{{ a.name }}</h3>
+      <p>{{ a.owner_name }}</p>
+      <p class="meta">{{ a.photo_count }} photo{% if a.photo_count != 1 %}s{% endif %} &bull; {{ a.creation_date }}</p>
+    </div>
+  </a>
+  {% else %}
+  <p class="empty">No albums yet.</p>
+  {% endfor %}
+</div>
+{% endblock %}
