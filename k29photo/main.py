@@ -1,14 +1,17 @@
+# Εισαγωγή Flask και database συναρτήσεων
 from flask import Blueprint, render_template
 from db import get_cursor
 
+# Δημιουργία blueprint για κύριες σελίδες
 main_bp = Blueprint('main', __name__)
 
 
+# Δρομολόγηση για τα στατιστικά τις αρχικής σελίδας
 @main_bp.route('/')
 def index():
     cur = get_cursor()
 
-    # Latest 12 photos for homepage gallery
+    # Πιο δεκτές φωτογραφίες για την αρχική σελίδα
     cur.execute("""
         SELECT p.photo_id, p.caption,
                a.name  AS album_name,
@@ -19,32 +22,43 @@ def index():
         JOIN users  u ON a.owner_id  = u.user_id
         LEFT JOIN likes l ON p.photo_id = l.photo_id
         GROUP BY p.photo_id, p.caption, a.name, owner_name
-        ORDER BY p.photo_id DESC
+        ORDER BY like_count DESC, p.photo_id DESC
         LIMIT 12
     """)
-    recent_photos = cur.fetchall()
+    top_photos = cur.fetchall()
 
-    # Top 5 popular tags for sidebar
+    # Καλύτερες 8 ετικέτες
     cur.execute("""
         SELECT t.tag_name, COUNT(pt.photo_id) AS cnt
         FROM tags t
         JOIN photo_tags pt ON t.tag_id = pt.tag_id
         GROUP BY t.tag_name
         ORDER BY cnt DESC
-        LIMIT 5
+        LIMIT 8
     """)
     popular_tags = cur.fetchall()
 
+    # Συνολικό πλήθος φωτογραφιών και χρηστών
+    cur.execute("SELECT COUNT(*) AS cnt FROM photos")
+    photo_count = cur.fetchone()['cnt']
+
+    cur.execute("SELECT COUNT(*) AS cnt FROM users")
+    user_count = cur.fetchone()['cnt']
+
     return render_template('index.html',
-                           recent_photos=recent_photos,
-                           popular_tags=popular_tags)
+                           top_photos=top_photos,
+                           popular_tags=popular_tags,
+                           photo_count=photo_count,
+                           user_count=user_count)
 
 
+# Δρομολόγηση για ιστορικό δραστηριότητας χρηστών
 @main_bp.route('/activity')
 def activity():
-    """Top 10 users by contribution score:
-       score = photos_uploaded + comments_on_others_photos"""
+    """Σβάλτε 10 χρήστες κατά βαθμό συντομίας:
+       βάθμος = φωτογραφίες + σχόλια σε φωτογραφίες που είναι άλλων"""
     cur = get_cursor()
+    # Διαταξη χρηστών κατά γενική δραστηριότητα
     cur.execute("""
         SELECT u.user_id,
                u.first_name || ' ' || u.last_name AS full_name,
@@ -70,10 +84,12 @@ def activity():
     return render_template('activity.html', top_users=top_users)
 
 
+# Δρομολόγηση για προβολή όλων των άλμπουμ
 @main_bp.route('/browse')
 def browse():
-    """Browse all albums publicly."""
+    """Ευκολή πρόσβαση σε ολομ τα άλμπουμ."""
     cur = get_cursor()
+    # Λήψη όλων των άλμπουμ και τα στοιχεία τους
     cur.execute("""
         SELECT a.album_id, a.name, a.creation_date,
                u.first_name || ' ' || u.last_name AS owner_name,

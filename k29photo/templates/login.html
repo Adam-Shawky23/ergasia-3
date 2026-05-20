@@ -1,18 +1,31 @@
-<!-- ========== login.html ========== -->
+{# Σελίδα σύνδεσης χρήστη #}
 {% extends 'base.html' %}
 {% block title %}Login — k29photo{% endblock %}
+
 {% block content %}
+{# Κύριο περιεχόμενο σελίδας σύνδεσης #}
+
 <div class="form-page">
   <h1>Login</h1>
+  
+  {# Φόρμα για σύνδεση με email και password #}
   <form action="{{ url_for('auth.login') }}" method="post" class="form-card">
+    {# Πεδίο email #}
     <label>Email
       <input type="email" name="email" class="input" required autofocus>
     </label>
+    
+    {# Πεδίο κωδικού #}
     <label>Password
       <input type="password" name="password" class="input" required>
     </label>
+    
+    {# Κουμπί σύνδεσης #}
     <button type="submit" class="btn btn-primary">Login</button>
+    
+    {# Link για εγγραφή αν δεν έχει λογαριασμό #}
     <p class="form-footer">No account? <a href="{{ url_for('auth.register') }}">Register here</a></p>
   </form>
 </div>
+
 {% endblock %}

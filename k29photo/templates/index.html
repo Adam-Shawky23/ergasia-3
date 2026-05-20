@@ -1,64 +1,349 @@
 {% extends 'base.html' %}
-{% block title %}k29photo — Home{% endblock %}
+{% block title %}k29photo — Where Every Frame Tells a Story{% endblock %}
 
 {% block content %}
-<div class="hero">
-  <h1>Share your world,<br><em>one frame at a time.</em></h1>
-  <p>Browse thousands of photos from across Greece and beyond.</p>
-  <div class="hero-actions">
-    <a href="{{ url_for('main.browse') }}" class="btn btn-primary">Browse Albums</a>
-    {% if not session.user_id %}
-      <a href="{{ url_for('auth.register') }}" class="btn btn-outline">Join Free</a>
-    {% else %}
-      <a href="{{ url_for('photos.upload_photo') }}" class="btn btn-outline">Upload Photo</a>
-    {% endif %}
+
+{# Hero section με τίτλο και κορυφαίες φωτογραφίες #}
+<div class="home-hero">
+  <div class="hero-text">
+    <p class="hero-eyebrow">k29<span>photo</span></p>
+    <h1>Where every<br><em>frame</em><br>tells a story.</h1>
+    <p class="hero-sub">{{ photo_count }} photos shared by {{ user_count }} photographers from across Greece and beyond.</p>
+    <div class="hero-actions">
+      <a href="{{ url_for('main.browse') }}" class="btn btn-primary">Explore Photos</a>
+      {% if not session.user_id %}
+        <a href="{{ url_for('auth.register') }}" class="btn btn-ghost">Join Free →</a>
+      {% else %}
+        <a href="{{ url_for('photos.upload_photo') }}" class="btn btn-ghost">Upload →</a>
+      {% endif %}
+    </div>
+  </div>
+
+  {# Πλέγμα με τις 6 καλύτερες φωτογραφίες #}
+  <div class="hero-mosaic">
+    {% for photo in top_photos[:6] %}
+    <a href="{{ url_for('photos.view_photo', photo_id=photo.photo_id) }}"
+       class="mosaic-cell mosaic-{{ loop.index }}">
+      <img src="{{ url_for('photos.serve_image', photo_id=photo.photo_id) }}"
+           alt="{{ photo.caption }}" loading="lazy">
+      <div class="mosaic-overlay">
+        <span class="mosaic-caption">{{ photo.caption or 'Untitled' }}</span>
+        <span class="mosaic-likes">♥ {{ photo.like_count }}</span>
+      </div>
+    </a>
+    {% endfor %}
   </div>
 </div>
 
-<div class="page-grid">
-  <section class="main-col">
-    <h2 class="section-title">Recent Photos</h2>
-    {% if recent_photos %}
-      <div class="photo-grid">
-        {% for photo in recent_photos %}
-          <a href="{{ url_for('photos.view_photo', photo_id=photo.photo_id) }}" class="photo-card">
-            <div class="photo-thumb">
-              <img src="{{ url_for('photos.serve_image', photo_id=photo.photo_id) }}"
-                   alt="{{ photo.caption }}" loading="lazy">
-            </div>
-            <div class="photo-info">
-              <p class="photo-caption">{{ photo.caption or 'Untitled' }}</p>
-              <p class="photo-meta">{{ photo.owner_name }} &bull; {{ photo.like_count }} ♥</p>
-            </div>
-          </a>
-        {% endfor %}
-      </div>
-    {% else %}
-      <p class="empty">No photos yet. <a href="{{ url_for('auth.register') }}">Register</a> and upload the first one!</p>
-    {% endif %}
-  </section>
-
-  <aside class="sidebar">
-    <div class="sidebar-card">
-      <h3>Popular Tags</h3>
-      <div class="tag-cloud">
-        {% for tag in popular_tags %}
-          <a href="{{ url_for('tags.view_tag', tag_name=tag.tag_name) }}" class="tag">
-            #{{ tag.tag_name }} <span class="tag-count">{{ tag.cnt }}</span>
-          </a>
-        {% endfor %}
-      </div>
-      <a href="{{ url_for('tags.popular_tags') }}" class="see-all">See all tags →</a>
-    </div>
-
-    <div class="sidebar-card">
-      <h3>Quick Search</h3>
-      <form action="{{ url_for('photos.search') }}" method="get" class="search-form">
-        <input type="text" name="q" placeholder="e.g. friends nafplion" class="input">
-        <button type="submit" class="btn btn-primary btn-sm">Search</button>
-      </form>
-      <p class="hint">Use multiple tags separated by spaces for AND search.</p>
-    </div>
-  </aside>
+{# Κυλιόμενη λίστα δημοφιλών tags #}
+<div class="marquee-wrap">
+  <div class="marquee-track">
+    {% for tag in popular_tags %}
+      <a href="{{ url_for('tags.view_tag', tag_name=tag.tag_name) }}" class="marquee-tag">
+        #{{ tag.tag_name }}
+      </a>
+    {% endfor %}
+    {% for tag in popular_tags %}
+      <a href="{{ url_for('tags.view_tag', tag_name=tag.tag_name) }}" class="marquee-tag">
+        #{{ tag.tag_name }}
+      </a>
+    {% endfor %}
+  </div>
 </div>
+
+{# Ενοτητα με τις πιο δημοφιλείς φωτογραφίες #}
+<div class="home-section">
+  <div class="section-header">
+    <div>
+      <h2 class="section-title">Most Loved</h2>
+      <p class="section-sub">Photos the community can't stop liking</p>
+    </div>
+    <a href="{{ url_for('photos.search') }}" class="btn btn-outline btn-sm">Search all →</a>
+  </div>
+
+  {# Masonry grid με όλες τις κορυφαίες φωτογραφίες #}
+  <div class="masonry-grid">
+    {% for photo in top_photos %}
+    <a href="{{ url_for('photos.view_photo', photo_id=photo.photo_id) }}" class="masonry-card">
+      <div class="masonry-img">
+        <img src="{{ url_for('photos.serve_image', photo_id=photo.photo_id) }}"
+             alt="{{ photo.caption }}" loading="lazy">
+        <div class="masonry-hover">
+          <span class="masonry-like">♥ {{ photo.like_count }}</span>
+        </div>
+      </div>
+      <div class="masonry-info">
+        <p class="masonry-caption">{{ photo.caption or 'Untitled' }}</p>
+        <p class="masonry-meta">{{ photo.owner_name }}</p>
+      </div>
+    </a>
+    {% endfor %}
+  </div>
+</div>
+
+{# Φόρμα αναζήτησης φωτογραφιών με tags #}
+<div class="home-search">
+  <p class="search-label">Find photos by tags</p>
+  <form action="{{ url_for('photos.search') }}" method="get" class="home-search-form">
+    <input type="text" name="q" placeholder="Try: nafplion sea sunset..." class="input input-lg home-search-input">
+    <button type="submit" class="btn btn-primary">Search</button>
+  </form>
+  <p class="hint">Use multiple tags separated by spaces for AND search</p>
+</div>
+
+<style>
+.home-hero {
+  display: grid;
+  grid-template-columns: 1fr 1.2fr;
+  gap: 3rem;
+  align-items: center;
+  min-height: 88vh;
+  padding: 2rem 0 4rem;
+}
+@media (max-width: 900px) {
+  .home-hero { grid-template-columns: 1fr; min-height: auto; }
+  .hero-mosaic { display: none; }
+}
+
+.hero-eyebrow {
+  font-family: 'Outfit', sans-serif;
+  font-size: 0.78rem;
+  font-weight: 600;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--text3);
+  margin-bottom: 1.25rem;
+}
+.hero-eyebrow span { color: var(--amber); }
+
+.hero-text h1 {
+  font-size: clamp(3.5rem, 7vw, 5.5rem);
+  line-height: 1.0;
+  margin-bottom: 1.5rem;
+  color: var(--text);
+  letter-spacing: -0.04em;
+}
+.hero-text h1 em {
+  color: var(--amber);
+  font-style: italic;
+  display: block;
+}
+
+.hero-sub {
+  color: var(--text2);
+  font-size: 1rem;
+  max-width: 360px;
+  margin-bottom: 2rem;
+  line-height: 1.7;
+}
+
+.hero-actions { display: flex; gap: 1rem; align-items: center; }
+
+.btn-ghost {
+  background: transparent;
+  color: var(--text2);
+  font-size: 0.9rem;
+  font-weight: 500;
+  padding: 0.6rem 0;
+  border: none;
+  transition: color 0.2s;
+  letter-spacing: 0.01em;
+}
+.btn-ghost:hover { color: var(--amber); transform: none; }
+
+.hero-mosaic {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  grid-template-rows: repeat(2, 200px);
+  gap: 6px;
+  border-radius: 20px;
+  overflow: hidden;
+}
+
+.mosaic-cell {
+  position: relative;
+  overflow: hidden;
+  display: block;
+}
+.mosaic-1 { grid-column: 1 / 3; grid-row: 1; }
+.mosaic-2 { grid-column: 3;     grid-row: 1; }
+.mosaic-3 { grid-column: 1;     grid-row: 2; }
+.mosaic-4 { grid-column: 2;     grid-row: 2; }
+.mosaic-5 { grid-column: 3;     grid-row: 2; }
+
+.mosaic-cell img {
+  width: 100%; height: 100%;
+  object-fit: cover;
+  display: block;
+  transition: transform 0.5s ease;
+}
+.mosaic-cell:hover img { transform: scale(1.06); }
+
+.mosaic-overlay {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(to top, rgba(0,0,0,0.75) 0%, transparent 60%);
+  opacity: 0;
+  transition: opacity 0.3s;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  padding: 0.75rem;
+}
+.mosaic-cell:hover .mosaic-overlay { opacity: 1; }
+.mosaic-caption {
+  font-size: 0.78rem;
+  color: #fff;
+  font-weight: 500;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.mosaic-likes {
+  font-size: 0.72rem;
+  color: rgba(255,255,255,0.7);
+  margin-top: 0.1rem;
+}
+
+.marquee-wrap {
+  overflow: hidden;
+  border-top: 1px solid var(--border);
+  border-bottom: 1px solid var(--border);
+  padding: 0.85rem 0;
+  margin: 0 -1.5rem 3.5rem;
+}
+.marquee-track {
+  display: flex;
+  gap: 1.5rem;
+  animation: marquee 20s linear infinite;
+  width: max-content;
+}
+.marquee-track:hover { animation-play-state: paused; }
+@keyframes marquee {
+  from { transform: translateX(0); }
+  to   { transform: translateX(-50%); }
+}
+.marquee-tag {
+  font-size: 0.82rem;
+  font-weight: 600;
+  letter-spacing: 0.05em;
+  color: var(--text3);
+  text-transform: lowercase;
+  white-space: nowrap;
+  transition: color 0.2s;
+}
+.marquee-tag:hover { color: var(--amber); text-decoration: none; }
+
+.home-section { margin-bottom: 4rem; }
+.section-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+  margin-bottom: 1.75rem;
+}
+.section-sub {
+  color: var(--text3);
+  font-size: 0.88rem;
+  margin-top: 0.2rem;
+}
+
+.masonry-grid {
+  columns: 4;
+  column-gap: 1rem;
+}
+@media (max-width: 1100px) { .masonry-grid { columns: 3; } }
+@media (max-width: 700px)  { .masonry-grid { columns: 2; } }
+
+.masonry-card {
+  break-inside: avoid;
+  display: block;
+  margin-bottom: 1rem;
+  border-radius: var(--radius-sm);
+  overflow: hidden;
+  position: relative;
+  background: var(--bg2);
+  border: 1px solid var(--border);
+  transition: transform 0.25s, box-shadow 0.25s;
+}
+.masonry-card:hover {
+  transform: translateY(-3px);
+  box-shadow: var(--shadow-lg);
+  text-decoration: none;
+}
+
+.masonry-img { position: relative; overflow: hidden; }
+.masonry-img img {
+  width: 100%;
+  display: block;
+  transition: transform 0.4s;
+}
+.masonry-card:hover .masonry-img img { transform: scale(1.03); }
+
+.masonry-hover {
+  position: absolute;
+  inset: 0;
+  background: rgba(0,0,0,0.4);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 0;
+  transition: opacity 0.25s;
+}
+.masonry-card:hover .masonry-hover { opacity: 1; }
+.masonry-like {
+  color: #fff;
+  font-size: 1rem;
+  font-weight: 600;
+}
+
+.masonry-info {
+  padding: 0.65rem 0.8rem;
+}
+.masonry-caption {
+  font-size: 0.82rem;
+  font-weight: 500;
+  color: var(--text);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.masonry-meta {
+  font-size: 0.74rem;
+  color: var(--text3);
+  margin-top: 0.15rem;
+}
+
+.home-search {
+  background: var(--bg2);
+  border: 1px solid var(--border);
+  border-radius: 20px;
+  padding: 3rem;
+  text-align: center;
+  margin-bottom: 2rem;
+  position: relative;
+  overflow: hidden;
+}
+.home-search::before {
+  content: '';
+  position: absolute;
+  top: 50%; left: 50%;
+  transform: translate(-50%, -50%);
+  width: 400px; height: 200px;
+  background: radial-gradient(ellipse, rgba(245,166,35,0.08) 0%, transparent 70%);
+  pointer-events: none;
+}
+.search-label {
+  font-family: 'Playfair Display', serif;
+  font-size: 1.8rem;
+  margin-bottom: 1.25rem;
+  color: var(--text);
+}
+.home-search-form {
+  display: flex;
+  gap: 0.75rem;
+  max-width: 600px;
+  margin: 0 auto 0.6rem;
+}
+.home-search-input { flex: 1; }
+</style>
 {% endblock %}

@@ -1,6 +1,8 @@
+# Εισαγωγή Flask και database συναρτήσεων
 from flask import Blueprint, render_template, session, redirect, url_for, flash
 from db import get_cursor
 
+# Δημιουργία blueprint για προτάσεις
 recommendations_bp = Blueprint('recommendations', __name__)
 
 
@@ -15,28 +17,26 @@ def login_required(f):
     return decorated
 
 
+# Δρομολόγηση για προτάσεις φίλων και φωτογραφιών
 @recommendations_bp.route('/recommendations')
 @login_required
 def recommendations():
     cur = get_cursor()
     user_id = session['user_id']
 
-    # -------------------------------------------------------
-    # 1. Friend-of-friend recommendations
-    #    Find friends of my friends who are NOT already my friends
-    #    and are NOT me. Rank by how many times they appear.
-    # -------------------------------------------------------
+    # Προτάσεις φίλων: φίλοι των φίλων που δεν είναι ήδη δικοί μου
+    # Παλιαος αλγόριθμος: friend-of-friend
     cur.execute("""
         SELECT u.user_id,
                u.first_name || ' ' || u.last_name AS full_name,
                u.hometown,
                COUNT(*) AS mutual_count
-        FROM friends f1                          -- my friends
-        JOIN friends f2 ON f1.friend_id = f2.user_id  -- their friends
+        FROM friends f1                          -- δικοί μου φίλοι
+        JOIN friends f2 ON f1.friend_id = f2.user_id  -- των φίλων μου
         JOIN users   u  ON f2.friend_id = u.user_id
         WHERE f1.user_id = %s
-          AND f2.friend_id != %s                 -- not me
-          AND f2.friend_id NOT IN (              -- not already my friend
+          AND f2.friend_id != %s                 -- όχι εσύ 
+          AND f2.friend_id NOT IN (              -- όχι ήδη δικός μου φίλος
               SELECT friend_id FROM friends WHERE user_id = %s
           )
         GROUP BY u.user_id, full_name, u.hometown
@@ -45,10 +45,8 @@ def recommendations():
     """, (user_id, user_id, user_id))
     friend_recs = cur.fetchall()
 
-    # -------------------------------------------------------
-    # 2. "You may also like" photos
-    #    Step 1: get user's 5 most-used tags
-    # -------------------------------------------------------
+    # Φωτογραφίες που μπορεί να σας αρέσουν
+    # Βήμα 1: πάρουμε τις 5 πιο αντιχνειζόμενες ετικέτες
     cur.execute("""
         SELECT t.tag_id, t.tag_name, COUNT(*) AS cnt
         FROM photo_tags pt
@@ -67,8 +65,8 @@ def recommendations():
         tag_ids = [row['tag_id'] for row in top_tags]
         n_tags  = len(tag_ids)
 
-        # Step 2: disjunctive search — rank by matches DESC, total_tags ASC
-        # Exclude photos owned by the current user
+        # Βήμα 2: αναζήτηση φωτογραφιών με αυτές τις ετικέτες
+        # Αποκλείεται τα δικά μας φωτογραφίες
         cur.execute("""
             SELECT p.photo_id, p.caption,
                    a.name AS album_name,

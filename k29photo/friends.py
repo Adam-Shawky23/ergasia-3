@@ -1,6 +1,8 @@
+# Εισαγωγή Flask και database συναρτήσεων
 from flask import Blueprint, render_template, request, redirect, url_for, session, flash
 from db import get_cursor, commit, rollback
 
+# Δημιουργία blueprint για φίλους
 friends_bp = Blueprint('friends', __name__)
 
 
@@ -15,13 +17,14 @@ def login_required(f):
     return decorated
 
 
+# Δρομολόγηση για προβολή λίστας φίλων και αναζήτησης
 @friends_bp.route('/friends')
 @login_required
 def my_friends():
-    """Show current user's friends list and a search box."""
+    """Εμφάνιση λίστας φίλων και πλαίσιο αναζήτησης."""
     cur = get_cursor()
 
-    # Friends the current user follows
+    # Φίλοι που ακολουθώ ο τρέχων χρήστης
     cur.execute("""
         SELECT u.user_id,
                u.first_name || ' ' || u.last_name AS full_name,
@@ -33,10 +36,11 @@ def my_friends():
     """, (session['user_id'],))
     friends = cur.fetchall()
 
-    # Search other users
+    # Αναζήτηση άλλων χρηστών
     search_q = request.args.get('q', '').strip()
     search_results = []
     if search_q:
+        # Αναζήτηση χρηστών που ταιριάζουν με το ερώτημα
         cur.execute("""
             SELECT u.user_id,
                    u.first_name || ' ' || u.last_name AS full_name,
@@ -60,15 +64,18 @@ def my_friends():
                            search_results=search_results)
 
 
+# Δρομολόγηση για προσθήκη νέου φίλου
 @friends_bp.route('/friends/add/<int:friend_id>', methods=['POST'])
 @login_required
 def add_friend(friend_id):
+    # Έλεγχος: τα πρόσωπα δεν μπορούν να είναι εαυτών φίλοι
     if friend_id == session['user_id']:
         flash('You cannot add yourself as a friend.', 'error')
         return redirect(url_for('friends.my_friends'))
 
     cur = get_cursor()
     try:
+        # Εισαγωγή φιλίας
         cur.execute("""
             INSERT INTO friends (user_id, friend_id)
             VALUES (%s, %s) ON CONFLICT DO NOTHING
@@ -82,11 +89,13 @@ def add_friend(friend_id):
     return redirect(url_for('friends.my_friends'))
 
 
+# Δρομολόγηση για αφαίρεση φίλου
 @friends_bp.route('/friends/remove/<int:friend_id>', methods=['POST'])
 @login_required
 def remove_friend(friend_id):
     cur = get_cursor()
     try:
+        # Διαγραφή φιλίας
         cur.execute("""
             DELETE FROM friends WHERE user_id = %s AND friend_id = %s
         """, (session['user_id'], friend_id))

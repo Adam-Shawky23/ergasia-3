@@ -1,14 +1,24 @@
+{# Σελίδα φωτογραφιών με συγκεκριμένη ετικέτα #}
 {% extends 'base.html' %}
 {% block title %}#{{ tag_name }} — k29photo{% endblock %}
+
 {% block content %}
-<div class="page-header">
-  <h1>#{{ tag_name }}</h1>
+
+{# Κεφαλίδα με το όνομα της ετικέτας και κουμπιά εναλλαγής #}
+<div class="tag-page-header">
+  <div>
+    <a href="{{ url_for('photos.search') }}" class="back-link">← Discover</a>
+    <h1 class="tag-page-title"><span class="tag-hash-big">#</span>{{ tag_name }}</h1>
+    <p class="tag-page-sub">{{ photos|length }} photo{% if photos|length != 1 %}s{% endif %} tagged</p>
+  </div>
+
   {% if session.user_id %}
+  {# Κουμπιά για εναλλαγή μεταξύ όλων και προσωπικών φωτογραφιών #}
   <div class="toggle-view">
     <a href="{{ url_for('tags.view_tag', tag_name=tag_name, view='all') }}"
-       class="btn btn-sm {% if view_mode == 'all' %}btn-primary{% else %}btn-outline{% endif %}">All Photos</a>
+       class="toggle-btn {% if view_mode == 'all' %}toggle-active{% endif %}">All Photos</a>
     <a href="{{ url_for('tags.view_tag', tag_name=tag_name, view='mine') }}"
-       class="btn btn-sm {% if view_mode == 'mine' %}btn-primary{% else %}btn-outline{% endif %}">My Photos</a>
+       class="toggle-btn {% if view_mode == 'mine' %}toggle-active{% endif %}">My Photos</a>
   </div>
   {% endif %}
 </div>
@@ -16,21 +26,91 @@
 {% if not tag %}
   <p class="empty">Tag "#{{ tag_name }}" does not exist.</p>
 {% elif photos %}
-  <div class="photo-grid">
+  {# Πλέγμα φωτογραφιών με layout τύπου masonry #}
+  <div class="masonry-grid">
     {% for photo in photos %}
-    <a href="{{ url_for('photos.view_photo', photo_id=photo.photo_id) }}" class="photo-card">
-      <div class="photo-thumb">
+    <a href="{{ url_for('photos.view_photo', photo_id=photo.photo_id) }}" class="masonry-card">
+      <div class="masonry-img">
         <img src="{{ url_for('photos.serve_image', photo_id=photo.photo_id) }}"
              alt="{{ photo.caption }}" loading="lazy">
+        <div class="masonry-hover">
+          <span class="masonry-like">♥ {{ photo.like_count }}</span>
+        </div>
       </div>
-      <div class="photo-info">
-        <p class="photo-caption">{{ photo.caption or 'Untitled' }}</p>
-        <p class="photo-meta">{{ photo.owner_name }} &bull; {{ photo.like_count }} ♥</p>
+      <div class="masonry-info">
+        <p class="masonry-caption">{{ photo.caption or 'Untitled' }}</p>
+        <p class="masonry-meta">{{ photo.owner_name }}</p>
       </div>
     </a>
     {% endfor %}
   </div>
 {% else %}
+  {# Αν δεν υπάρχουν φωτογραφίες #}
   <p class="empty">No {% if view_mode == 'mine' %}of your {% endif %}photos tagged with "#{{ tag_name }}".</p>
 {% endif %}
+
+<style>
+.tag-page-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+  padding: 2rem 0 2.5rem;
+  border-bottom: 1px solid var(--border);
+  margin-bottom: 2.5rem;
+}
+.back-link {
+  display: inline-block;
+  font-size: 0.8rem;
+  color: var(--text3);
+  margin-bottom: 0.75rem;
+  transition: color 0.2s;
+}
+.back-link:hover { color: var(--amber); }
+.tag-hash-big { color: var(--amber); }
+.tag-page-title {
+  font-size: clamp(2.5rem, 6vw, 4.5rem);
+  line-height: 1.0;
+  letter-spacing: -0.04em;
+  margin-bottom: 0.4rem;
+}
+.tag-page-sub { color: var(--text2); font-size: 0.9rem; }
+
+.toggle-view { display: flex; gap: 2px; background: var(--bg3); border-radius: var(--radius-sm); padding: 3px; border: 1px solid var(--border); }
+.toggle-btn {
+  padding: 0.4rem 1rem;
+  border-radius: calc(var(--radius-sm) - 2px);
+  font-size: 0.82rem;
+  font-weight: 500;
+  color: var(--text3);
+  transition: all 0.2s;
+}
+.toggle-btn:hover { color: var(--text); text-decoration: none; }
+.toggle-active { background: var(--bg4); color: var(--text) !important; }
+
+/* Masonry shared styles */
+.masonry-grid { columns: 4; column-gap: 1rem; }
+@media (max-width: 1100px) { .masonry-grid { columns: 3; } }
+@media (max-width: 700px)  { .masonry-grid { columns: 2; } }
+.masonry-card {
+  break-inside: avoid; display: block; margin-bottom: 1rem;
+  border-radius: var(--radius-sm); overflow: hidden; position: relative;
+  background: var(--bg2); border: 1px solid var(--border);
+  transition: transform 0.25s, box-shadow 0.25s;
+}
+.masonry-card:hover { transform: translateY(-3px); box-shadow: var(--shadow-lg); text-decoration: none; }
+.masonry-img { position: relative; overflow: hidden; }
+.masonry-img img { width: 100%; display: block; transition: transform 0.4s; }
+.masonry-card:hover .masonry-img img { transform: scale(1.03); }
+.masonry-hover {
+  position: absolute; inset: 0; background: rgba(0,0,0,0.4);
+  display: flex; align-items: center; justify-content: center;
+  opacity: 0; transition: opacity 0.25s;
+}
+.masonry-card:hover .masonry-hover { opacity: 1; }
+.masonry-like { color: #fff; font-size: 1rem; font-weight: 600; }
+.masonry-info { padding: 0.65rem 0.8rem; }
+.masonry-caption { font-size: 0.82rem; font-weight: 500; color: var(--text); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.masonry-meta { font-size: 0.74rem; color: var(--text3); margin-top: 0.15rem; }
+</style>
+
 {% endblock %}

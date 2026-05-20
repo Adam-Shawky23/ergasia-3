@@ -1,18 +1,249 @@
 {% extends 'base.html' %}
-{% block title %}Browse Albums — k29photo{% endblock %}
+{# Κληρονομούμε το βασικό template #}
+{% block title %}Browse — k29photo{% endblock %}
+
 {% block content %}
-<h1 class="page-title">All Albums</h1>
-<div class="album-grid">
+{# Κύριο περιεχόμενο της σελίδας #}
+
+{# Header με τίτλο και κουμπί δημιουργίας αλμπουμ #}
+<div class="browse-header">
+  <div>
+    <p class="browse-eyebrow">All Albums</p>
+    <h1 class="browse-title">Browse</h1>
+    {# Δείχνουμε πόσα αλμπουμ υπάρχουν στη σελίδα #}
+    <p class="browse-sub">{{ albums|length }} albums from our community of photographers.</p>
+  </div>
+  {# Αν είναι συνδεδεμένος ο χρήστης, δείχνουμε κουμπί για νέο αλμπουμ #}
+  {% if session.user_id %}
+  <a href="{{ url_for('albums.create_album') }}" class="btn btn-primary">+ New Album</a>
+  {% endif %}
+</div>
+
+{% if albums %}
+{# Αν υπάρχουν αλμπουμ, τα δείχνουμε σε πλέγμα #}
+<div class="browse-grid">
+  {# Περνάμε όλα τα αλμπουμ και δημιουργούμε κάρτα για το καθένα #}
   {% for a in albums %}
-  <a href="{{ url_for('albums.view_album', album_id=a.album_id) }}" class="album-card">
-    <div class="album-info">
-      <h3>{{ a.name }}</h3>
-      <p>{{ a.owner_name }}</p>
-      <p class="meta">{{ a.photo_count }} photo{% if a.photo_count != 1 %}s{% endif %} &bull; {{ a.creation_date }}</p>
+  <a href="{{ url_for('albums.view_album', album_id=a.album_id) }}" class="browse-card">
+    <div class="browse-card-inner">
+      {# Πάνω μέρος κάρτας: αριθμός φωτογραφιών και βέλος #}
+      <div class="browse-card-top">
+        <span class="browse-count">{{ a.photo_count }} photo{% if a.photo_count != 1 %}s{% endif %}</span>
+        <span class="browse-arrow">→</span>
+      </div>
+      {# Όνομα και στοιχεία αλμπουμ #}
+      <h3 class="browse-name">{{ a.name }}</h3>
+      <p class="browse-owner">{{ a.owner_name }}</p>
+      <p class="browse-date">{{ a.creation_date }}</p>
     </div>
   </a>
-  {% else %}
-  <p class="empty">No albums yet.</p>
   {% endfor %}
 </div>
+{% else %}
+{# Αν δεν υπάρχουν αλμπουμ, δείχνουμε μήνυμα #}
+<p class="empty">No albums yet. <a href="{{ url_for('auth.register') }}">Register</a> and create the first one!</p>
+{% endif %}
+
+<style>
+/* Στυλ για το header της σελίδας */
+.browse-header {
+  /* Κάνουμε τα στοιχεία να είναι σε σειρά οριζόντια */
+  display: flex;
+  /* Ένα στα αριστερά, ένα στα δεξιά */
+  justify-content: space-between;
+  /* Ευθυγράμμιση στο κάτω μέρος */
+  align-items: flex-end;
+  /* Κενό γύρω από το περιεχόμενο */
+  padding: 2rem 0 2.5rem;
+  /* Γραμμή στο κάτω μέρος */
+  border-bottom: 1px solid var(--border);
+  /* Κενό κάτω από το header */
+  margin-bottom: 2.5rem;
+}
+
+/* Μικρό κείμενο πάνω από τον τίτλο */
+.browse-eyebrow {
+  /* Μικρό μέγεθος γραμματοσειράς */
+  font-size: 0.75rem;
+  /* Πιο χοντρή γραμματοσειρά */
+  font-weight: 600;
+  /* Χώρος μεταξύ των γραμμάτων */
+  letter-spacing: 0.18em;
+  /* Όλα κεφαλαία γράμματα */
+  text-transform: uppercase;
+  /* Χρυσό χρώμα */
+  color: var(--amber);
+  /* Κενό κάτω */
+  margin-bottom: 0.5rem;
+}
+
+/* Μεγάλος τίτλος στη σελίδα */
+.browse-title {
+  /* Μεγάλο μέγεθος που αλλάζει ανάλογα με το μέγεθος της οθόνης */
+  font-size: clamp(2.5rem, 5vw, 4rem);
+  /* Χώρος μεταξύ γραμμών */
+  line-height: 1.0;
+  /* Χώρος μεταξύ γραμμάτων (αρνητικό = πιο κοντά) */
+  letter-spacing: -0.04em;
+  /* Κενό κάτω */
+  margin-bottom: 0.5rem;
+}
+
+/* Περιγραφικό κείμενο κάτω από τον τίτλο */
+.browse-sub { color: var(--text2); font-size: 0.9rem; }
+
+/* Πλέγμα που δείχνει τα αλμπουμ (responsive) */
+.browse-grid {
+  /* Χρησιμοποιούμε πλέγμα για να τακτοποιήσουμε τα αλμπουμ */
+  display: grid;
+  /* Κάθε κάρτα είναι τουλάχιστον 280px, αν χωράει παίρνει παραπάνω χώρο */
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  /* Κενό μεταξύ των κάρτων */
+  gap: 1px;
+  /* Γραμμή γύρω από το πλέγμα */
+  border: 1px solid var(--border);
+  /* Στρογγυλεμένες γωνίες */
+  border-radius: var(--radius);
+  /* Αν τα πράγματα υπερχειλίζουν, κρύψε τα */
+  overflow: hidden;
+}
+
+/* Κάθε κάρτα αλμπουμ */
+.browse-card {
+  /* Κάντο κανονικό block element */
+  display: block;
+  /* Ανοιχτό γκρι φόντο */
+  background: var(--bg2);
+  /* Ομαλή αλλαγή χρώματος */
+  transition: background 0.2s;
+  /* Θέσε τη θέση ως relative για τη χρυσή γραμμή */
+  position: relative;
+}
+
+/* Χρυσή γραμμή που εμφανίζεται όταν περνάμε το ποντίκι */
+.browse-card::after {
+  /* Δημιουργούμε ένα ψευδο-στοιχείο */
+  content: '';
+  /* Στο κάτω μέρος της κάρτας */
+  position: absolute;
+  bottom: 0; left: 0; right: 0;
+  /* Λεπτή γραμμή, ύψος 2 pixels */
+  height: 2px;
+  /* Χρυσό χρώμα */
+  background: var(--amber);
+  /* Αρχικά δεν φαίνεται (scale 0 = δεν ορατή) */
+  transform: scaleX(0);
+  /* Η γραμμή μεγαλώνει από τα αριστερά */
+  transform-origin: left;
+  /* Ομαλή κίνηση */
+  transition: transform 0.3s ease;
+}
+
+/* Αλλαγές όταν περνάμε το ποντίκι πάνω στην κάρτα */
+.browse-card:hover { 
+  /* Πιο σκούρο φόντο */
+  background: var(--bg3); 
+  /* Χωρίς υπογράμμιση του link */
+  text-decoration: none; 
+}
+
+/* Η χρυσή γραμμή γίνεται ορατή */
+.browse-card:hover::after { 
+  /* Η γραμμή πλέον φαίνεται (scale 1 = 100%) */
+  transform: scaleX(1); 
+}
+
+/* Εσωτερικό περιεχόμενο κάρτας */
+.browse-card-inner { 
+  /* Κενό μέσα στην κάρτα */
+  padding: 1.6rem; 
+}
+
+/* Πάνω μέρος κάρτας με αριθμό φωτογραφιών και βέλος */
+.browse-card-top {
+  /* Τα στοιχεία σε σειρά οριζόντια */
+  display: flex;
+  /* Αριθμός αριστερά, βέλος δεξιά */
+  justify-content: space-between;
+  /* Κάθετη ευθυγράμμιση στο κέντρο */
+  align-items: center;
+  /* Κενό κάτω */
+  margin-bottom: 1rem;
+}
+
+/* Αριθμός φωτογραφιών σε ένα αλμπουμ */
+.browse-count {
+  /* Μικρή γραμματοσειρά */
+  font-size: 0.72rem;
+  /* Χοντρή γραμματοσειρά */
+  font-weight: 600;
+  /* Χώρος μεταξύ γραμμάτων */
+  letter-spacing: 0.1em;
+  /* Όλα κεφαλαία */
+  text-transform: uppercase;
+  /* Ανοιχτό γκρι κείμενο */
+  color: var(--text3);
+  /* Φόντο λίγο πιο σκούρο */
+  background: var(--bg3);
+  /* Κενό γύρω από το κείμενο */
+  padding: 0.2rem 0.6rem;
+  /* Στρογγυλεμένες γωνίες */
+  border-radius: 20px;
+  /* Λεπτή γραμμή περίγραμμα */
+  border: 1px solid var(--border);
+}
+
+/* Βέλος που δείχνει προς τα δεξιά */
+.browse-arrow {
+  /* Ανοιχτό γκρι χρώμα */
+  color: var(--text3);
+  /* Κανονικό μέγεθος */
+  font-size: 1rem;
+  /* Ομαλή κίνηση και αλλαγή χρώματος */
+  transition: transform 0.2s, color 0.2s;
+}
+
+/* Όταν περνάμε το ποντίκι, το βέλος κινείται και γίνεται χρυσό */
+.browse-card:hover .browse-arrow {
+  /* Μετακίνηση δεξιά */
+  transform: translateX(4px);
+  /* Χρυσό χρώμα */
+  color: var(--amber);
+}
+
+/* Όνομα του αλμπουμ (με ωραία σερίφ γραμματοσειρά) */
+.browse-name {
+  /* Λίγο μεγαλύτερη γραμματοσειρά */
+  font-size: 1.15rem;
+  /* Σκούρο χρώμα κειμένου */
+  color: var(--text);
+  /* Κενό κάτω */
+  margin-bottom: 0.4rem;
+  /* Χώρος μεταξύ γραμμών */
+  line-height: 1.3;
+  /* Ωραία serif γραμματοσειρά για κομψό look */
+  font-family: 'Playfair Display', serif;
+  /* Λεπτή γραμματοσειρά */
+  font-weight: 400;
+}
+
+/* Όνομα του ιδιοκτήτη του αλμπουμ */
+.browse-owner {
+  /* Μικρή γραμματοσειρά */
+  font-size: 0.83rem;
+  /* Γκρι κείμενο */
+  color: var(--text2);
+  /* Μικρό κενό κάτω */
+  margin-bottom: 0.2rem;
+}
+
+/* Ημερομηνία δημιουργίας του αλμπουμ */
+.browse-date {
+  /* Πολύ μικρή γραμματοσειρά */
+  font-size: 0.75rem;
+  /* Ανοιχτό γκρι χρώμα */
+  color: var(--text3);
+}
+</style>
+
 {% endblock %}

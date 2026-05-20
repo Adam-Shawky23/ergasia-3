@@ -1,50 +1,73 @@
 {% extends 'base.html' %}
+{# Κληρονομούμε το βασικό template #}
 {% block title %}Friends — k29photo{% endblock %}
+
 {% block content %}
+{# Κύριο περιεχόμενο της σελίδας φίλων #}
+
+{# Τίτλος της σελίδας #}
 <h1 class="page-title">Friends</h1>
 
+{# Grid layout με δύο στήλες: κύρια στήλη και sidebar #}
 <div class="page-grid">
+  {# Κύρια στήλη με τη λίστα των φίλων #}
   <section class="main-col">
+    {# Τίτλος με αριθμό φίλων #}
     <h2>My Friends ({{ friends|length }})</h2>
+    
+    {# Αν υπάρχουν φίλοι, τους δείχνουμε σε λίστα #}
     {% if friends %}
     <div class="user-list">
+      {# Περνάμε όλους τους φίλους και τους εμφανίζουμε #}
       {% for f in friends %}
       <div class="user-card">
+        {# Πληροφορίες φίλου: όνομα και πόλη #}
         <div class="user-info">
           <strong>{{ f.full_name }}</strong>
           <span class="meta">{{ f.hometown or '' }}</span>
         </div>
+        {# Κουμπί για να κόψουμε το follow με φίλο #}
         <form action="{{ url_for('friends.remove_friend', friend_id=f.user_id) }}" method="post">
           <button type="submit" class="btn btn-sm btn-outline">Unfollow</button>
         </form>
       </div>
       {% endfor %}
     </div>
+    {# Αν δεν έχουμε φίλους, δείχνουμε ένα μήνυμα #}
     {% else %}
       <p class="empty">You are not following anyone yet. Search for users below!</p>
     {% endif %}
   </section>
 
+  {# Sidebar με αναζήτηση χρηστών #}
   <aside class="sidebar">
+    {# Κάρτα αναζήτησης #}
     <div class="sidebar-card">
       <h3>Find Users</h3>
+      {# Φόρμα αναζήτησης #}
       <form action="{{ url_for('friends.my_friends') }}" method="get" class="search-form">
+        {# Πεδίο εισόδου για όνομα ή email #}
         <input type="text" name="q" value="{{ search_q }}" placeholder="Name or email..." class="input">
         <button type="submit" class="btn btn-primary btn-sm">Search</button>
       </form>
     </div>
 
+    {# Αν υπάρχουν αποτελέσματα αναζήτησης, τα δείχνουμε #}
     {% if search_results %}
     <div class="sidebar-card">
       <h3>Results for "{{ search_q }}"</h3>
+      {# Περνάμε τα αποτελέσματα αναζήτησης #}
       {% for u in search_results %}
       <div class="user-card compact">
+        {# Πληροφορίες χρήστη #}
         <div class="user-info">
           <strong>{{ u.full_name }}</strong>
           <span class="meta">{{ u.hometown or '' }}</span>
         </div>
+        {# Αν είναι ήδη φίλος, δείχνουμε "Following" #}
         {% if u.already_friend %}
           <span class="badge">Following</span>
+        {# Αλλιώς δείχνουμε κουμπί για να τον προσθέσουμε #}
         {% else %}
           <form action="{{ url_for('friends.add_friend', friend_id=u.user_id) }}" method="post">
             <button type="submit" class="btn btn-sm btn-primary">+ Follow</button>
@@ -56,4 +79,5 @@
     {% endif %}
   </aside>
 </div>
+
 {% endblock %}

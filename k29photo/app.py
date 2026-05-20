@@ -1,3 +1,4 @@
+# Εισαγωγή απαραίτητων βιβλιοθηκών και Flask blueprints
 import os
 from flask import Flask
 from db import close_db
@@ -10,15 +11,18 @@ from friends import friends_bp
 from recommendations import recommendations_bp
 from main import main_bp
 
+# Δημιουργία του φακέλου βάσης
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 
+# Συνάρτηση δημιουργίας εφαρμογής Flask
 def create_app():
     app = Flask(__name__,
                 template_folder=os.path.join(BASE_DIR, 'templates'),
                 static_folder=os.path.join(BASE_DIR, 'static'))
+    # Ορισμός κλειδιού για ασφαλές session
     app.secret_key = 'k29photo-secret-key-change-in-production'
 
-    app.register_blueprint(main_bp)
+    # Εγγραφή όλων των blueprints
     app.register_blueprint(auth_bp)
     app.register_blueprint(albums_bp)
     app.register_blueprint(photos_bp)
@@ -26,10 +30,11 @@ def create_app():
     app.register_blueprint(comments_bp)
     app.register_blueprint(friends_bp)
     app.register_blueprint(recommendations_bp)
-
+    app.register_blueprint(main_bp)
     app.teardown_appcontext(close_db)
     return app
 
+# Εκτέλεση της εφαρμογής
 if __name__ == '__main__':
     app = create_app()
     app.run(debug=True, host='0.0.0.0', port=5001)

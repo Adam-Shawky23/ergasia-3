@@ -1,9 +1,16 @@
+{# Σελίδα εγγραφής νέου χρήστη #}
 {% extends 'base.html' %}
 {% block title %}Register — k29photo{% endblock %}
+
 {% block content %}
+{# Κύριο περιεχόμενο σελίδας εγγραφής #}
+
 <div class="form-page">
   <h1>Create Account</h1>
+  
+  {# Φόρμα εγγραφής με στοιχεία χρήστη #}
   <form action="{{ url_for('auth.register') }}" method="post" class="form-card">
+    {# Όνομα και επώνυμο σε δύο στήλες #}
     <div class="form-row">
       <label>First Name *
         <input type="text" name="first_name" class="input" required>
@@ -12,12 +19,18 @@
         <input type="text" name="last_name" class="input" required>
       </label>
     </div>
+    
+    {# Email (υποχρεωτικό) #}
     <label>Email *
       <input type="email" name="email" class="input" required>
     </label>
+    
+    {# Κωδικός (υποχρεωτικό) #}
     <label>Password *
       <input type="password" name="password" class="input" required>
     </label>
+    
+    {# Ημερομηνία γέννησης και φύλο σε δύο στήλες #}
     <div class="form-row">
       <label>Date of Birth
         <input type="date" name="dob" class="input">
@@ -31,11 +44,18 @@
         </select>
       </label>
     </div>
+    
+    {# Πόλη/τόπος κατοικίας #}
     <label>Hometown
       <input type="text" name="hometown" class="input" placeholder="e.g. Athens">
     </label>
+    
+    {# Κουμπί δημιουργίας λογαριασμού #}
     <button type="submit" class="btn btn-primary">Create Account</button>
+    
+    {# Link για σύνδεση αν έχει ήδη λογαριασμό #}
     <p class="form-footer">Already have an account? <a href="{{ url_for('auth.login') }}">Login</a></p>
   </form>
 </div>
+
 {% endblock %}

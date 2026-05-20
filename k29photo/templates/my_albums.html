@@ -1,12 +1,20 @@
+{# Σελίδα με τα αλμπουμ του χρήστη #}
 {% extends 'base.html' %}
 {% block title %}My Albums — k29photo{% endblock %}
+
 {% block content %}
+{# Κύριο περιεχόμενο σελίδας αλμπουμ #}
+
+{# Header με τίτλο και κουμπί δημιουργίας αλμπουμ #}
 <div class="page-header">
   <h1>My Albums</h1>
   <a href="{{ url_for('albums.create_album') }}" class="btn btn-primary">+ New Album</a>
 </div>
+
+{# Πλέγμα με όλα τα αλμπουμ του χρήστη #}
 <div class="album-grid">
   {% for a in albums %}
+  {# Κάρτα αλμπουμ με όνομα, αριθμό φωτογραφιών και ημερομηνία #}
   <a href="{{ url_for('albums.view_album', album_id=a.album_id) }}" class="album-card">
     <div class="album-info">
       <h3>{{ a.name }}</h3>
@@ -14,7 +22,9 @@
     </div>
   </a>
   {% else %}
+  {# Μήνυμα αν δεν υπάρχουν αλμπουμ #}
   <p class="empty">You have no albums yet. <a href="{{ url_for('albums.create_album') }}">Create one!</a></p>
   {% endfor %}
 </div>
+
 {% endblock %}

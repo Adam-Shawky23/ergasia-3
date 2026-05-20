@@ -1,9 +1,12 @@
+# Εισαγωγή απαραίτητων βιβλιοθηκών Flask και database
 from flask import Blueprint, render_template, request, redirect, url_for, session, flash, abort
 from db import get_cursor, commit, rollback
 
+# Δημιουργία blueprint για τη διαχείριση άλμπουμ
 albums_bp = Blueprint('albums', __name__)
 
 
+# Διακοσμητής για έλεγχο αν ο χρήστης είναι συνδεδεμένος
 def login_required(f):
     from functools import wraps
     @wraps(f)
@@ -15,6 +18,7 @@ def login_required(f):
     return decorated
 
 
+# Δρομολόγηση για προβολή ενός άλμπουμ και των φωτογραφιών του
 @albums_bp.route('/albums/<int:album_id>')
 def view_album(album_id):
     cur = get_cursor()
@@ -46,6 +50,7 @@ def view_album(album_id):
     return render_template('album.html', album=album, photos=photos)
 
 
+# Δρομολόγηση για δημιουργία νέου άλμπουμ (GET - φόρμα, POST - αποθήκευση)
 @albums_bp.route('/albums/create', methods=['GET', 'POST'])
 @login_required
 def create_album():
@@ -71,6 +76,7 @@ def create_album():
     return render_template('create_album.html')
 
 
+# Δρομολόγηση για διαγραφή άλμπουμ (μόνο POST)
 @albums_bp.route('/albums/<int:album_id>/delete', methods=['POST'])
 @login_required
 def delete_album(album_id):
@@ -91,6 +97,7 @@ def delete_album(album_id):
     return redirect(url_for('main.browse'))
 
 
+# Δρομολόγηση για προβολή όλων των άλμπουμ του χρήστη
 @albums_bp.route('/my-albums')
 @login_required
 def my_albums():

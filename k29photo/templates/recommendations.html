@@ -1,19 +1,28 @@
+{# Σελίδα προτάσεων για τον χρήστη #}
 {% extends 'base.html' %}
 {% block title %}For You — k29photo{% endblock %}
+
 {% block content %}
+{# Κύριο περιεχόμενο σελίδας προτάσεων #}
+
 <h1 class="page-title">For You</h1>
 
+{# ΕΝΟΤΗΤΑ 1: Προτάσεις χρηστών (φίλοι φίλων) #}
 <section class="rec-section">
   <h2>People You May Know</h2>
   <p class="hint">Based on friends-of-friends</p>
+  
   {% if friend_recs %}
+  {# Λίστα χρηστών που μπορεί να ενδιαφέρουν #}
   <div class="user-list">
     {% for u in friend_recs %}
     <div class="user-card">
+      {# Πληροφορίες χρήστη και αριθμό κοινών φίλων #}
       <div class="user-info">
         <strong>{{ u.full_name }}</strong>
         <span class="meta">{{ u.hometown or '' }} &bull; {{ u.mutual_count }} mutual connection{% if u.mutual_count != 1 %}s{% endif %}</span>
       </div>
+      {# Κουμπί για να τον ακολουθήσουμε #}
       <form action="{{ url_for('friends.add_friend', friend_id=u.user_id) }}" method="post">
         <button type="submit" class="btn btn-sm btn-primary">+ Follow</button>
       </form>
@@ -21,13 +30,17 @@
     {% endfor %}
   </div>
   {% else %}
+    {# Μήνυμα αν δεν υπάρχουν προτάσεις #}
     <p class="empty">No friend suggestions yet. Add some friends first!</p>
   {% endif %}
 </section>
 
+{# ΕΝΟΤΗΤΑ 2: Προτάσεις φωτογραφιών βασισμένες στα tags #}
 <section class="rec-section">
   <h2>Photos You May Also Like</h2>
+  
   {% if top_tags %}
+  {# Δημοφιλή tags του χρήστη #}
   <p class="hint">Based on your top tags:
     {% for t in top_tags %}
       <a href="{{ url_for('tags.view_tag', tag_name=t.tag_name) }}" class="tag">#{{ t.tag_name }}</a>
@@ -36,13 +49,16 @@
   {% endif %}
 
   {% if photo_recs %}
+  {# Πλέγμα με προτεινόμενες φωτογραφίες #}
   <div class="photo-grid">
     {% for photo in photo_recs %}
     <a href="{{ url_for('photos.view_photo', photo_id=photo.photo_id) }}" class="photo-card">
+      {# Εικόνα φωτογραφίας #}
       <div class="photo-thumb">
         <img src="{{ url_for('photos.serve_image', photo_id=photo.photo_id) }}"
              alt="{{ photo.caption }}" loading="lazy">
       </div>
+      {# Πληροφορίες φωτογραφίας #}
       <div class="photo-info">
         <p class="photo-caption">{{ photo.caption or 'Untitled' }}</p>
         <p class="photo-meta">
@@ -55,7 +71,9 @@
     {% endfor %}
   </div>
   {% else %}
+    {# Μήνυμα αν δεν υπάρχουν προτάσεις #}
     <p class="empty">Upload some photos with tags to get personalised recommendations!</p>
   {% endif %}
 </section>
+
 {% endblock %}

@@ -1,13 +1,17 @@
+# Εισαγωγή Flask και database συναρτήσεων
 from flask import Blueprint, render_template, request, session
 from db import get_cursor
 
+# Δημιουργία blueprint για ετικέτες
 tags_bp = Blueprint('tags', __name__)
 
 
+# Δρομολόγηση αναρόμεταπροβολή δημοφιλέστερων ετικετών
 @tags_bp.route('/tags')
 def popular_tags():
-    """List most popular tags (most photos associated)."""
+    """Каталог πιο δημοφιλών ετικετών (περισσότερες φωτογραφίες)."""
     cur = get_cursor()
+    # Λήψη δημοφιλέστερων ετικετών
     cur.execute("""
         SELECT t.tag_id, t.tag_name, COUNT(pt.photo_id) AS photo_count
         FROM tags t
@@ -20,23 +24,25 @@ def popular_tags():
     return render_template('tags.html', tags=tags)
 
 
+# Δρομολόγηση για προβολή φωτογραφιών με συγκεκριμένη ετικέτα
 @tags_bp.route('/tags/<tag_name>')
 def view_tag(tag_name):
     """
-    Show photos for a tag.
-    ?view=mine  → only current user's photos with this tag
-    ?view=all   → all photos with this tag (default)
+    Εμφάνιση φωτογραφιών για μια ετικέτα.
+    ?view=mine  → μόνο φωτογραφίες του παιθού με αυτήν την ετικέτα
+    ?view=all   → όλες οι φωτογραφίες με αυτήν την ετικέτα (προεπιλογή)
     """
     view_mode = request.args.get('view', 'all')
     cur = get_cursor()
 
-    # Confirm tag exists
+    # Ενατοποίεση ετικέτας
     cur.execute('SELECT tag_id, tag_name FROM tags WHERE tag_name = %s', (tag_name,))
     tag = cur.fetchone()
 
     photos = []
     if tag:
         if view_mode == 'mine' and 'user_id' in session:
+            # Λήψη μόνο φωτογραφιών του χρήστη
             cur.execute("""
                 SELECT p.photo_id, p.caption,
                        a.name AS album_name,
@@ -54,6 +60,7 @@ def view_tag(tag_name):
             """, (tag['tag_id'], session['user_id']))
         else:
             view_mode = 'all'
+            # Λήψη όλων των φωτογραφιών
             cur.execute("""
                 SELECT p.photo_id, p.caption,
                        a.name AS album_name,

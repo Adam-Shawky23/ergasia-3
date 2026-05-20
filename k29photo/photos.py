@@ -1,8 +1,10 @@
+# Εισαγωγή Flask και database συναρτήσεων
 from flask import (Blueprint, render_template, request, redirect,
                    url_for, session, flash, abort, send_file, Response)
 from db import get_cursor, commit, rollback
 import io
 
+# Δημιουργία blueprint για φωτογραφίες
 photos_bp = Blueprint('photos', __name__)
 
 
@@ -17,9 +19,11 @@ def login_required(f):
     return decorated
 
 
+# Δρομολόγηση για προβολή μιας φωτογραφίας και των σχολίων της
 @photos_bp.route('/photos/<int:photo_id>')
 def view_photo(photo_id):
     cur = get_cursor()
+    # Λήψη στοιχείων φωτογραφίας
     cur.execute("""
         SELECT p.photo_id, p.caption, p.album_id,
                a.name AS album_name,
@@ -34,7 +38,7 @@ def view_photo(photo_id):
     if not photo:
         abort(404)
 
-    # Tags
+    # Λήψη ετικετών της φωτογραφίας
     cur.execute("""
         SELECT t.tag_id, t.tag_name
         FROM tags t
@@ -44,7 +48,7 @@ def view_photo(photo_id):
     """, (photo_id,))
     tags = cur.fetchall()
 
-    # Comments
+    # Λήψη σχολίων στη φωτογραφία
     cur.execute("""
         SELECT c.comment_id, c.content, c.post_date,
                COALESCE(u.first_name || ' ' || u.last_name, c.guest_name) AS author,
@@ -56,7 +60,7 @@ def view_photo(photo_id):
     """, (photo_id,))
     comments = cur.fetchall()
 
-    # Likes
+    # Λήψη χρηστών που έδωσαν ψήφους
     cur.execute("""
         SELECT u.user_id,
                u.first_name || ' ' || u.last_name AS full_name
@@ -66,7 +70,7 @@ def view_photo(photo_id):
     """, (photo_id,))
     likes = cur.fetchall()
 
-    # Has current user liked this?
+    # Έλεγχος αν ο τρέχων χρήστης έχει θέσει στοίχεια ψήφου
     user_liked = False
     if 'user_id' in session:
         cur.execute("""
@@ -83,22 +87,36 @@ def view_photo(photo_id):
                            user_liked=user_liked)
 
 
+# Δρομολόγηση για προβολή εικόνας φωτογραφίας
 @photos_bp.route('/photos/<int:photo_id>/image')
 def serve_image(photo_id):
-    """Serve raw binary image data."""
     cur = get_cursor()
+    # Λήψη δεδομένων εικόνας
     cur.execute('SELECT data FROM photos WHERE photo_id = %s', (photo_id,))
     row = cur.fetchone()
     if not row:
         abort(404)
-    return Response(bytes(row['data']), mimetype='image/jpeg')
+    data = bytes(row['data'])
+    # Έλεγχος τύπου εικόνας από μαγική συναγώγή
+    if data[:8] == b'\x89PNG\r\n\x1a\n':
+        mime = 'image/png'
+    elif data[:3] == b'\xff\xd8\xff':
+        mime = 'image/jpeg'
+    elif data[:6] in (b'GIF87a', b'GIF89a'):
+        mime = 'image/gif'
+    elif data[:4] == b'RIFF' and data[8:12] == b'WEBP':
+        mime = 'image/webp'
+    else:
+        mime = 'image/jpeg'
+    return Response(data, mimetype=mime)
 
 
+# Δρομολόγηση για φόρτωση νέας φωτογραφίας
 @photos_bp.route('/photos/upload', methods=['GET', 'POST'])
 @login_required
 def upload_photo():
     cur = get_cursor()
-    # Get user's albums for the dropdown
+    # Λήψη άλμπουμ του χρήστη
     cur.execute("""
         SELECT album_id, name FROM albums
         WHERE owner_id = %s ORDER BY name
@@ -111,35 +129,40 @@ def upload_photo():
         tags_raw = request.form.get('tags', '').strip().lower()
         file     = request.files.get('photo')
 
+        # Έλεγχος απαιτούμενων πεδίων
         if not album_id or not file or file.filename == '':
             flash('Album and photo file are required.', 'error')
             return render_template('upload_photo.html', albums=albums)
 
-        # Verify album belongs to current user
+        # Έλεγχος κτείασης
         cur.execute('SELECT owner_id FROM albums WHERE album_id = %s', (album_id,))
         alb = cur.fetchone()
         if not alb or alb['owner_id'] != session['user_id']:
             abort(403)
 
+        # Ανάγνωση δεδομένων εικόνας
         image_data = file.read()
         try:
+            from psycopg2 import Binary
+            # Εισαγωγή φωτογραφίας στη βάση δεδομένων
             cur.execute("""
                 INSERT INTO photos (album_id, caption, data)
                 VALUES (%s, %s, %s) RETURNING photo_id
-            """, (album_id, caption, psycopg2_bytes(image_data)))
+            """, (album_id, caption, Binary(image_data)))
             photo_id = cur.fetchone()['photo_id']
 
-            # Handle tags
+            # Εισαγωγή ετικετών και άλλη λογική
             if tags_raw:
                 tag_list = [t.strip() for t in tags_raw.replace(',', ' ').split() if t.strip()]
                 for tag_name in tag_list:
-                    # Upsert tag
+                    # Εισαγωγή ή αναματε ετικέτας
                     cur.execute("""
                         INSERT INTO tags (tag_name) VALUES (%s)
                         ON CONFLICT (tag_name) DO NOTHING
                     """, (tag_name,))
                     cur.execute('SELECT tag_id FROM tags WHERE tag_name = %s', (tag_name,))
                     tag_id = cur.fetchone()['tag_id']
+                    # Γνώσεις φωτογραφίας-ετικέτας
                     cur.execute("""
                         INSERT INTO photo_tags (photo_id, tag_id)
                         VALUES (%s, %s) ON CONFLICT DO NOTHING
@@ -153,12 +176,6 @@ def upload_photo():
             flash(f'Upload failed: {e}', 'error')
 
     return render_template('upload_photo.html', albums=albums)
-
-
-def psycopg2_bytes(data):
-    """Wrap bytes for psycopg2 binary insertion."""
-    from psycopg2 import Binary
-    return Binary(data)
 
 
 @photos_bp.route('/photos/<int:photo_id>/delete', methods=['POST'])
@@ -188,10 +205,13 @@ def delete_photo(photo_id):
 
 
 @photos_bp.route('/photos/<int:photo_id>/like', methods=['POST'])
-@login_required
 def like_photo(photo_id):
+    if 'user_id' not in session:
+        flash('Please log in to like photos.', 'error')
+        return redirect(url_for('auth.login'))
     cur = get_cursor()
     try:
+        from psycopg2 import Binary
         cur.execute("""
             INSERT INTO likes (user_id, photo_id)
             VALUES (%s, %s) ON CONFLICT DO NOTHING
@@ -222,15 +242,14 @@ def unlike_photo(photo_id):
 
 @photos_bp.route('/search')
 def search():
-    """AND-based tag search: ?q=nafplion+sea"""
-    query = request.args.get('q', '').strip().lower()
+    """AND-based tag search + popular tags for discover page."""
+    query   = request.args.get('q', '').strip().lower()
     results = []
+    cur     = get_cursor()
 
     if query:
         tag_list = query.split()
         n = len(tag_list)
-        cur = get_cursor()
-        # Find photos that have ALL the requested tags
         cur.execute("""
             SELECT p.photo_id, p.caption,
                    a.name AS album_name,
@@ -249,8 +268,19 @@ def search():
                 HAVING COUNT(DISTINCT t.tag_name) = %s
             )
             GROUP BY p.photo_id, p.caption, a.name, owner_name
-            ORDER BY p.photo_id DESC
+            ORDER BY like_count DESC
         """, (tag_list, n))
         results = cur.fetchall()
 
-    return render_template('search.html', query=query, results=results)
+    # Always load popular tags for the discover page
+    cur.execute("""
+        SELECT t.tag_name, COUNT(pt.photo_id) AS photo_count
+        FROM tags t
+        JOIN photo_tags pt ON t.tag_id = pt.tag_id
+        GROUP BY t.tag_name
+        ORDER BY photo_count DESC
+        LIMIT 20
+    """)
+    tags = cur.fetchall()
+
+    return render_template('search.html', query=query, results=results, tags=tags)

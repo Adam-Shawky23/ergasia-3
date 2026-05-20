@@ -1,13 +1,18 @@
+{# Σελίδα αναζήτησης σχολίων #}
 {% extends 'base.html' %}
 {% block title %}Search Comments — k29photo{% endblock %}
 {% block content %}
+{# Τίτλος και περιγραφή #}
 <h1 class="page-title">Comment Search</h1>
+
+{# Φόρμα αναζήτησης σχολίων #}
 <form action="{{ url_for('comments.search_comments') }}" method="get" class="search-bar">
   <input type="text" name="q" value="{{ query }}" placeholder="Enter exact comment text..." class="input input-lg" autofocus>
   <button type="submit" class="btn btn-primary">Search</button>
 </form>
 <p class="hint">Finds users who have posted comments that exactly match your query.</p>
 
+{# Αν υπάρχουν αποτελέσματα, τα δείχνουμε σε πίνακα #}
 {% if query %}
   <h2 class="results-title">{{ results|length }} user{% if results|length != 1 %}s{% endif %} matched "{{ query }}"</h2>
   {% if results %}
@@ -23,6 +28,7 @@
     </tbody>
   </table>
   {% else %}
+    {# Αν δεν βρεθούν αποτελέσματα #}
     <p class="empty">No users found with that exact comment text.</p>
   {% endif %}
 {% endif %}

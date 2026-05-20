@@ -1,8 +1,12 @@
+{# Σελίδα με δημοφιλείς ετικέτες #}
 {% extends 'base.html' %}
 {% block title %}Popular Tags — k29photo{% endblock %}
 {% block content %}
+{# Τίτλος σελίδας #}
 <h1 class="page-title">Popular Tags</h1>
+{# Νέφος ετικετών ταξινομημένο κατά δημοτικότητα #}
 <div class="tag-cloud large">
+  {# Επανάληψη για κάθε ετικέτα, το μέγεθος εξαρτάται από τον αριθμό φωτογραφιών #}
   {% for tag in tags %}
     <a href="{{ url_for('tags.view_tag', tag_name=tag.tag_name) }}"
        class="tag" style="font-size: {{ [0.85 + tag.photo_count * 0.08, 1.6]|min }}rem">
@@ -10,6 +14,7 @@
       <span class="tag-count">{{ tag.photo_count }}</span>
     </a>
   {% else %}
+    {# Αν δεν υπάρχουν ετικέτες #}
     <p class="empty">No tags yet.</p>
   {% endfor %}
 </div>

@@ -1,13 +1,18 @@
+{# Σελίδα φόρτωσης φωτογραφίας #}
 {% extends 'base.html' %}
 {% block title %}Upload Photo — k29photo{% endblock %}
 {% block content %}
 <div class="form-page">
+  {# Τίτλος #}
   <h1>Upload Photo</h1>
+  {# Έλεγχος αν υπάρχουν άλμπουμ για φόρτωση #}
   {% if not albums %}
     <p class="empty">You need an album first. <a href="{{ url_for('albums.create_album') }}">Create one.</a></p>
   {% else %}
+  {# Φόρμα φόρτωσης φωτογραφίας #}
   <form action="{{ url_for('photos.upload_photo') }}" method="post"
         enctype="multipart/form-data" class="form-card">
+    {# Επιλογή άλμπουμ #}
     <label>Album *
       <select name="album_id" class="input" required>
         {% for a in albums %}
@@ -15,17 +20,21 @@
         {% endfor %}
       </select>
     </label>
+    {# Επιλογή αρχείου φωτογραφίας #}
     <label>Photo File *
       <input type="file" name="photo" class="input" accept="image/*" required>
     </label>
+    {# Προαιρετική λεζάντα #}
     <label>Caption
       <input type="text" name="caption" class="input" placeholder="Describe your photo...">
     </label>
+    {# Ετικέτες για κατηγοριοποίηση #}
     <label>Tags
       <input type="text" name="tags" class="input"
              placeholder="e.g. nafplion sea sunset (space or comma separated)">
       <span class="hint">Lowercase only, no spaces within a tag.</span>
     </label>
+    {# Κουμπί φόρτωσης #}
     <button type="submit" class="btn btn-primary">Upload</button>
   </form>
   {% endif %}

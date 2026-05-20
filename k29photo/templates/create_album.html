@@ -1,13 +1,28 @@
 {% extends 'base.html' %}
+{# Κληρονομούμε το βασικό template #}
 {% block title %}Create Album — k29photo{% endblock %}
+
 {% block content %}
+{# Κύριο περιεχόμενο της σελίδας #}
+
+{# Container για τη φόρμα δημιουργίας αλμπουμ #}
 <div class="form-page">
+  {# Τίτλος της σελίδας #}
   <h1>New Album</h1>
+  
+  {# Φόρμα για δημιουργία νέου αλμπουμ #}
+  {# Στέλνουμε τα δεδομένα με POST method στη create_album συνάρτηση #}
   <form action="{{ url_for('albums.create_album') }}" method="post" class="form-card">
+    {# Ετικέτα με όνομα του πεδίου #}
     <label>Album Name *
+      {# Πεδίο κειμένου για το όνομα του αλμπουμ #}
+      {# Το * σημαίνει ότι είναι υποχρεωτικό #}
       <input type="text" name="name" class="input" required autofocus placeholder="e.g. Summer in Nafplion">
     </label>
+    
+    {# Κουμπί υποβολής της φόρμας #}
     <button type="submit" class="btn btn-primary">Create Album</button>
   </form>
 </div>
+
 {% endblock %}

@@ -32,7 +32,7 @@
     <!-- Likes -->
     <div class="likes-section">
       <span class="like-count">{{ likes|length }} ♥</span>
-      {% if session.user_id and session.user_id != photo.owner_id %}
+        {% if session.user_id %}
         {% if user_liked %}
           <form action="{{ url_for('photos.unlike_photo', photo_id=photo.photo_id) }}" method="post" style="display:inline">
             <button type="submit" class="btn btn-sm btn-liked">Unlike</button>

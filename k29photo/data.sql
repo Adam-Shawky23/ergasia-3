@@ -3,7 +3,7 @@
 --  Course: K29 Database Design and Use, Spring 2026
 -- =============================================================
 --  Passwords are bcrypt hashes of the plaintext shown in comments.
---  For testing use plaintext: password123 for all users.
+--  For testing I use plaintext: password123 for all users.
 -- =============================================================
 
 
@@ -52,12 +52,7 @@ INSERT INTO albums (name, owner_id, creation_date) VALUES
 -- ---------------------------------------------------------------
 -- 3. PHOTOS  (30 photos — data is a small placeholder PNG in hex)
 --    In production the Flask app inserts real binary data.
---    Here we use a 1x1 transparent PNG (68 bytes) as placeholder.
 -- ---------------------------------------------------------------
--- 1x1 transparent PNG bytes:
--- \x89504e470d0a1a0a0000000d494844520000000100000001080000000
---   03a7e9b550000000a4944415478016360000000020001e221bc330000
---   0000049454e44ae426082
 
 INSERT INTO photos (album_id, caption, data) VALUES
 -- Album 1: Summer in Nafplion (photos 1-3)
@@ -327,15 +322,3 @@ INSERT INTO likes (user_id, photo_id) VALUES
 -- likes on photo 29 (owner: Petros=9)
 (1, 29), (2, 29), (4, 29), (6, 29);
 
-
--- =============================================================
---  QUICK SANITY-CHECK QUERIES  (run after loading data)
--- =============================================================
--- SELECT COUNT(*) FROM users;       -- expect 12
--- SELECT COUNT(*) FROM albums;      -- expect 16
--- SELECT COUNT(*) FROM photos;      -- expect 30
--- SELECT COUNT(*) FROM tags;        -- expect 20
--- SELECT COUNT(*) FROM photo_tags;  -- expect 70+
--- SELECT COUNT(*) FROM friends;     -- expect 32
--- SELECT COUNT(*) FROM comments;    -- expect 40
--- SELECT COUNT(*) FROM likes;       -- expect 50+
