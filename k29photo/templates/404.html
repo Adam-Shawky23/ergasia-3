@@ -1,0 +1,14 @@
+{% extends 'base.html' %}
+{% block title %}404 — Page Not Found{% endblock %}
+{% block content %}
+<div style="text-align:center; padding: 6rem 0;">
+  <p class="discover-eyebrow">404</p>
+  <h1 style="font-size: clamp(2.5rem, 6vw, 4rem); letter-spacing: -0.04em; margin-bottom: 1rem;">
+    Page not found
+  </h1>
+  <p style="color: var(--text2); margin-bottom: 2rem;">
+    The page you're looking for doesn't exist or has been moved.
+  </p>
+  <a href="{{ url_for('main.index') }}" class="btn btn-primary">Go home</a>
+</div>
+{% endblock %}
