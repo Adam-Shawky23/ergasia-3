@@ -11,29 +11,39 @@
 
 <div class="photo-detail">
 
-  <!-- Left: image -->
-  <div>
+  <!-- Image -->
+  <div class="photo-image-wrap">
     <img class="full-image"
          src="{{ url_for('photos.serve_image', photo_id=photo.photo_id) }}"
          alt="{{ photo.caption }}">
   </div>
 
-  <!-- Right: sidebar -->
+  <!-- Sidebar -->
   <div class="photo-sidebar">
 
-    <h1 class="photo-title">{{ photo.caption or 'Untitled' }}</h1>
-    <p class="photo-owner">
-      by <a href="{{ url_for('main.user_profile', user_id=photo.owner_id) }}">
-        {{ photo.owner_name }}
+    <!-- Owner -->
+    <div class="photo-owner-row">
+      <a href="{{ url_for('main.user_profile', user_id=photo.owner_id) }}" class="owner-avatar">
+        {{ photo.owner_name[0] }}
       </a>
-      in <a href="{{ url_for('albums.view_album', album_id=photo.album_id) }}">
-        {{ photo.album_name }}
-      </a>
-    </p>
+      <div>
+        <a href="{{ url_for('main.user_profile', user_id=photo.owner_id) }}" class="owner-name">
+          {{ photo.owner_name }}
+        </a>
+        <p class="owner-album">
+          in <a href="{{ url_for('albums.view_album', album_id=photo.album_id) }}">{{ photo.album_name }}</a>
+        </p>
+      </div>
+    </div>
+
+    <!-- Caption -->
+    {% if photo.caption %}
+    <h1 class="photo-title">{{ photo.caption }}</h1>
+    {% endif %}
 
     <!-- Tags -->
     {% if tags %}
-    <div class="tag-list" style="margin-bottom:1.25rem">
+    <div class="tag-list" style="margin: 1rem 0;">
       {% for tag in tags %}
         <a href="{{ url_for('tags.view_tag', tag_name=tag.tag_name) }}" class="tag">
           #{{ tag.tag_name }}
@@ -42,52 +52,72 @@
     </div>
     {% endif %}
 
-    <!-- Likes -->
-    <div class="likes-section">
-      <span class="like-count">{{ likes|length }} ♥</span>
+    <!-- Like button — heart style -->
+    <div class="like-row">
       {% if session.user_id %}
         {% if user_liked %}
           <form method="post" action="{{ url_for('photos.unlike_photo', photo_id=photo.photo_id) }}">
-            <button class="btn btn-liked btn-sm">Unlike</button>
+            <button type="submit" class="heart-btn liked" title="Unlike">
+              <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/></svg>
+            </button>
           </form>
         {% else %}
           <form method="post" action="{{ url_for('photos.like_photo', photo_id=photo.photo_id) }}">
-            <button class="btn btn-outline btn-sm">♥ Like</button>
+            <button type="submit" class="heart-btn" title="Like">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
+            </button>
           </form>
         {% endif %}
       {% else %}
-        <a href="{{ url_for('auth.login') }}" class="btn btn-outline btn-sm">♥ Like</a>
+        <a href="{{ url_for('auth.login') }}" class="heart-btn" title="Log in to like">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
+        </a>
       {% endif %}
+
+      <span class="like-count-text">
+        {{ likes|length }} {% if likes|length == 1 %}like{% else %}likes{% endif %}
+      </span>
     </div>
 
-    <!-- Who liked -->
+    <!-- Likers -->
     {% if likes %}
-    <div class="likers">
-      <p class="hint" style="margin-bottom:0.4rem">Liked by</p>
-      {% for l in likes %}
-        <a href="{{ url_for('main.user_profile', user_id=l.user_id) }}" class="tag">
-          {{ l.full_name }}
+    <div class="likers-row">
+      {% for l in likes[:5] %}
+        <a href="{{ url_for('main.user_profile', user_id=l.user_id) }}"
+           class="liker-avatar" title="{{ l.full_name }}">
+          {{ l.full_name[0] }}
         </a>
       {% endfor %}
+      {% if likes|length > 5 %}
+        <span class="liker-more">+{{ likes|length - 5 }}</span>
+      {% endif %}
     </div>
     {% endif %}
 
-    <!-- Photo metadata -->
+    <!-- Meta -->
     <div class="photo-meta-row">
       {% if photo.uploaded_at %}
-        <span><span class="photo-meta-label">Uploaded</span> {{ photo.uploaded_at.strftime('%d %b %Y') }}</span>
+        <span><span class="photo-meta-label">Uploaded</span>
+          {{ photo.uploaded_at.strftime('%d %b %Y') if photo.uploaded_at else '' }}
+        </span>
       {% endif %}
       <span>
         <span class="photo-meta-label">Visibility</span>
-        <span class="visibility-badge {{ photo.visibility }}">{{ photo.visibility }}</span>
+        <span class="visibility-badge {{ photo.visibility }}">
+          {% if photo.visibility == 'private' %}🔒 Private
+          {% elif photo.visibility == 'friends' %}⭐ Close Friends
+          {% else %}🌍 Public{% endif %}
+        </span>
       </span>
     </div>
 
     <!-- Owner actions -->
     {% if session.user_id == photo.owner_id %}
-    <div style="margin-top:1.25rem; display:flex; gap:0.5rem">
-      <form method="post" action="{{ url_for('photos.delete_photo', photo_id=photo.photo_id) }}">
-        <button class="btn btn-danger btn-sm">Delete Photo</button>
+    <div class="owner-actions">
+      <form method="post"
+            action="{{ url_for('photos.delete_photo', photo_id=photo.photo_id) }}"
+            onsubmit="return confirm('Delete this photo?')">
+        <button class="btn btn-danger btn-sm">Delete photo</button>
       </form>
     </div>
     {% endif %}
@@ -97,37 +127,255 @@
 
 <!-- Comments -->
 <div class="comments-section">
-  <h2>Comments ({{ comments|length }})</h2>
+  <h2>Comments <span class="comments-count">{{ comments|length }}</span></h2>
 
   {% if comments %}
-    {% for c in comments %}
-    <div class="comment">
-      <p class="comment-author">
-        {% if c.author_id %}
-          <a href="{{ url_for('main.user_profile', user_id=c.author_id) }}">{{ c.author }}</a>
-        {% else %}
-          {{ c.author }}
-        {% endif %}
-      </p>
-      <p class="comment-text">{{ c.content }}</p>
-      <p class="comment-date">{{ c.post_date }}</p>
+    <div class="comments-list">
+      {% for c in comments %}
+      <div class="comment">
+        <div class="comment-avatar">
+          {{ c.author[0] if c.author else '?' }}
+        </div>
+        <div class="comment-body">
+          <div class="comment-header">
+            {% if c.author_id %}
+              <a href="{{ url_for('main.user_profile', user_id=c.author_id) }}"
+                 class="comment-author">{{ c.author }}</a>
+            {% else %}
+              <span class="comment-author">{{ c.author }}</span>
+            {% endif %}
+            <span class="comment-date">{{ c.post_date }}</span>
+          </div>
+          <p class="comment-text">{{ c.content }}</p>
+        </div>
+      </div>
+      {% endfor %}
     </div>
-    {% endfor %}
   {% else %}
-    <p class="empty" style="margin-bottom:1.5rem">No comments yet. Be the first!</p>
+    <p class="empty" style="margin:1.5rem 0">No comments yet. Be the first!</p>
   {% endif %}
 
+  <!-- Comment form -->
   <div class="comment-form">
-    <h3>Leave a comment</h3>
     <form method="post" action="{{ url_for('comments.add_comment', photo_id=photo.photo_id) }}">
       {% if not session.user_id %}
-        <input type="text" name="guest_name" placeholder="Your name (optional)" class="input">
+        <input type="text" name="guest_name" placeholder="Your name (optional)" class="input"
+               style="margin-bottom:0.6rem">
       {% endif %}
-      <textarea name="content" class="input textarea"
-                placeholder="Write something..." required></textarea>
-      <button type="submit" class="btn btn-primary">Post comment</button>
+      <div class="comment-input-row">
+        <div class="comment-form-avatar">
+          {{ session.user_name[0] if session.user_name else '?' }}
+        </div>
+        <textarea name="content" class="input comment-textarea"
+                  placeholder="Add a comment..." required rows="2"></textarea>
+        <button type="submit" class="btn btn-primary btn-sm comment-submit">Post</button>
+      </div>
     </form>
   </div>
 </div>
+
+<style>
+/* ── Photo detail layout ─────────────────────────── */
+.photo-image-wrap {
+  background: var(--bg2);
+  border-radius: var(--radius);
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 300px;
+}
+.full-image {
+  width: 100%;
+  display: block;
+  border-radius: var(--radius);
+}
+
+/* ── Owner row ───────────────────────────────────── */
+.photo-owner-row {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  margin-bottom: 1rem;
+  padding-bottom: 1rem;
+  border-bottom: 1px solid var(--border);
+}
+.owner-avatar {
+  width: 40px; height: 40px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, var(--amber), var(--amber2));
+  color: #000;
+  font-weight: 700;
+  font-size: 1rem;
+  display: flex; align-items: center; justify-content: center;
+  flex-shrink: 0;
+  text-decoration: none;
+}
+.owner-name {
+  font-weight: 600;
+  font-size: 0.92rem;
+  color: var(--text);
+  display: block;
+  text-decoration: none;
+}
+.owner-name:hover { color: var(--amber); }
+.owner-album { font-size: 0.78rem; color: var(--text3); margin: 0; }
+.owner-album a { color: var(--text3); }
+.owner-album a:hover { color: var(--amber); }
+
+/* ── Heart button ────────────────────────────────── */
+.like-row {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  margin: 1.25rem 0 0.75rem;
+}
+.heart-btn {
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 0;
+  width: 44px; height: 44px;
+  display: flex; align-items: center; justify-content: center;
+  color: var(--text3);
+  transition: transform 0.15s, color 0.15s;
+  text-decoration: none;
+  border-radius: 50%;
+}
+.heart-btn svg { width: 28px; height: 28px; }
+.heart-btn:hover { transform: scale(1.15); color: #e05252; }
+.heart-btn.liked { color: #e05252; animation: heartPop 0.3s ease; }
+
+@keyframes heartPop {
+  0%   { transform: scale(1); }
+  50%  { transform: scale(1.35); }
+  100% { transform: scale(1); }
+}
+
+.like-count-text {
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: var(--text2);
+}
+
+/* ── Likers avatars ──────────────────────────────── */
+.likers-row {
+  display: flex;
+  align-items: center;
+  gap: -6px;
+  margin-bottom: 1rem;
+  flex-wrap: wrap;
+  gap: 4px;
+}
+.liker-avatar {
+  width: 28px; height: 28px;
+  border-radius: 50%;
+  background: var(--bg4);
+  border: 2px solid var(--bg);
+  color: var(--text2);
+  font-size: 0.7rem;
+  font-weight: 600;
+  display: flex; align-items: center; justify-content: center;
+  text-decoration: none;
+  transition: transform 0.15s;
+}
+.liker-avatar:hover { transform: scale(1.15); z-index: 1; }
+.liker-more {
+  font-size: 0.72rem;
+  color: var(--text3);
+  margin-left: 4px;
+}
+
+/* ── Owner actions ───────────────────────────────── */
+.owner-actions {
+  margin-top: 1.25rem;
+  padding-top: 1rem;
+  border-top: 1px solid var(--border);
+}
+
+/* ── Comments section ────────────────────────────── */
+.comments-count {
+  font-size: 1rem;
+  font-weight: 400;
+  color: var(--text3);
+  font-family: 'Outfit', sans-serif;
+  margin-left: 0.4rem;
+}
+.comments-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+  margin: 1.25rem 0;
+}
+.comment {
+  display: flex;
+  gap: 0.75rem;
+  padding: 0.85rem 0;
+  border-bottom: 1px solid var(--border);
+  animation: fadeUp 0.3s ease both;
+}
+.comment:last-child { border-bottom: none; }
+.comment-avatar {
+  width: 34px; height: 34px;
+  border-radius: 50%;
+  background: var(--bg4);
+  color: var(--text2);
+  font-size: 0.8rem;
+  font-weight: 600;
+  display: flex; align-items: center; justify-content: center;
+  flex-shrink: 0;
+}
+.comment-body { flex: 1; }
+.comment-header {
+  display: flex;
+  align-items: baseline;
+  gap: 0.5rem;
+  margin-bottom: 0.25rem;
+}
+.comment-author {
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--text);
+  text-decoration: none;
+}
+.comment-author:hover { color: var(--amber); }
+.comment-date { font-size: 0.72rem; color: var(--text3); }
+.comment-text { font-size: 0.9rem; color: var(--text); line-height: 1.5; margin: 0; }
+
+/* ── Comment form ────────────────────────────────── */
+.comment-form {
+  margin-top: 1.5rem;
+  padding-top: 1.25rem;
+  border-top: 1px solid var(--border);
+}
+.comment-input-row {
+  display: flex;
+  gap: 0.6rem;
+  align-items: flex-start;
+}
+.comment-form-avatar {
+  width: 34px; height: 34px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, var(--amber), var(--amber2));
+  color: #000;
+  font-size: 0.8rem;
+  font-weight: 700;
+  display: flex; align-items: center; justify-content: center;
+  flex-shrink: 0;
+  margin-top: 2px;
+}
+.comment-textarea {
+  flex: 1;
+  resize: none;
+  min-height: 42px;
+  padding: 0.6rem 0.85rem;
+  font-size: 0.9rem;
+  line-height: 1.5;
+  border-radius: var(--radius-sm);
+  transition: min-height 0.2s;
+}
+.comment-textarea:focus { min-height: 80px; }
+.comment-submit { flex-shrink: 0; margin-top: 2px; }
+</style>
 
 {% endblock %}

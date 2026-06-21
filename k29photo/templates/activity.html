@@ -1,28 +1,41 @@
 {% extends 'base.html' %}
-{% block title %}Top Users — k29photo{% endblock %}
+{% block title %}Top Users — Pixora{% endblock %}
+
 {% block content %}
 <h1 class="page-title">Top Contributors</h1>
 <p class="subtitle">Score = photos uploaded + comments on others' photos</p>
-<table class="table">
-  <thead>
-    <tr><th>#</th><th>Name</th><th>Hometown</th><th>Photos</th><th>Comments</th><th>Score</th></tr>
-  </thead>
-  <tbody>
-    {% for u in top_users %}
-    <tr {% if loop.index == 1 %}class="rank-1"{% elif loop.index == 2 %}class="rank-2"{% elif loop.index == 3 %}class="rank-3"{% endif %}>
-      <td>{{ loop.index }}</td>
-      <td>
-        <a href="{{ url_for('main.user_profile', user_id=u.user_id) }}"
-           style="color: var(--text); font-weight: 500;">
-          {{ u.full_name }}
-        </a>
-      </td>
-      <td>{{ u.hometown or '—' }}</td>
-      <td>{{ u.photo_count }}</td>
-      <td>{{ u.comment_count }}</td>
-      <td><strong>{{ u.score }}</strong></td>
-    </tr>
-    {% endfor %}
-  </tbody>
-</table>
+
+<div class="table-wrap">
+  <table class="table">
+    <thead>
+      <tr>
+        <th>#</th>
+        <th>Name</th>
+        <th>Hometown</th>
+        <th>Photos</th>
+        <th>Comments</th>
+        <th>Score</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for u in top_users %}
+      <tr {% if loop.index == 1 %}class="rank-1"
+          {% elif loop.index == 2 %}class="rank-2"
+          {% elif loop.index == 3 %}class="rank-3"{% endif %}>
+        <td>{{ loop.index }}</td>
+        <td>
+          <a href="{{ url_for('main.user_profile', user_id=u.user_id) }}"
+             style="color:var(--text); font-weight:500;">
+            {{ u.full_name }}
+          </a>
+        </td>
+        <td>{{ u.hometown or '—' }}</td>
+        <td>{{ u.photo_count }}</td>
+        <td>{{ u.comment_count }}</td>
+        <td><strong>{{ u.score }}</strong></td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
 {% endblock %}

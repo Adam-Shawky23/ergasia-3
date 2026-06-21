@@ -24,10 +24,10 @@
   <div class="album-actions">
     <a href="{{ url_for('albums.manage_sharing', album_id=album.album_id) }}"
        class="btn btn-outline btn-sm">Privacy settings</a>
-    <a href="{{ url_for('photos.upload_photo') }}" class="btn btn-primary btn-sm">+ Upload photo</a>
+    <a href="{{ url_for('photos.upload_photo') }}" class="btn btn-primary btn-sm">+ Upload</a>
     <form method="post" action="{{ url_for('albums.delete_album', album_id=album.album_id) }}"
           onsubmit="return confirm('Delete this album and all its photos?')">
-      <button class="btn btn-danger btn-sm">Delete album</button>
+      <button class="btn btn-danger btn-sm">Delete</button>
     </form>
   </div>
   {% endif %}
@@ -40,44 +40,43 @@
     <div class="photo-thumb">
       <img src="{{ url_for('photos.serve_image', photo_id=photo.photo_id) }}"
            alt="{{ photo.caption }}" loading="lazy">
+      <div class="photo-card-overlay">
+        <div class="photo-card-overlay-likes">
+          <svg viewBox="0 0 24 24"><path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/></svg>
+          {{ photo.like_count }}
+        </div>
+      </div>
     </div>
     <div class="photo-info">
       <p class="photo-caption">{{ photo.caption or 'Untitled' }}</p>
-      <p class="photo-meta">♥ {{ photo.like_count }}</p>
     </div>
   </a>
   {% endfor %}
 </div>
+
 {% else %}
-<div style="text-align:center; padding:4rem 0;">
-  <p style="font-size:3rem; margin-bottom:1rem;">📷</p>
-  <p class="empty">No photos in this album yet.</p>
+<div class="empty-state">
+  <div class="empty-state-icon">📷</div>
+  <h3>No photos yet</h3>
+  <p>This album is empty.</p>
   {% if is_owner %}
-    <a href="{{ url_for('photos.upload_photo') }}" class="btn btn-primary" style="margin-top:1rem">
-      Upload your first photo
-    </a>
+    <a href="{{ url_for('photos.upload_photo') }}" class="btn btn-primary">Upload your first photo</a>
   {% endif %}
 </div>
 {% endif %}
 
 <style>
 .album-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: flex-start;
-  padding: 2rem 0 2rem;
-  border-bottom: 1px solid var(--border);
-  margin-bottom: 2rem;
-  gap: 1rem;
+  display:flex; justify-content:space-between; align-items:flex-start;
+  padding:2rem 0 2rem; border-bottom:1px solid var(--border); margin-bottom:2rem; gap:1rem;
 }
-.album-actions { display: flex; gap: 0.5rem; flex-shrink: 0; flex-wrap: wrap; align-items: center; }
+.album-actions { display:flex; gap:0.5rem; flex-shrink:0; flex-wrap:wrap; align-items:center; }
 .visibility-badge {
-  font-size: 0.72rem; font-weight: 600; padding: 0.25rem 0.65rem;
-  border-radius: 10px; border: 1px solid var(--border);
-  color: var(--text3); background: var(--bg3);
+  font-size:0.72rem; font-weight:600; padding:0.25rem 0.65rem;
+  border-radius:10px; border:1px solid var(--border); color:var(--text3); background:var(--bg3);
 }
 .visibility-badge.friends { color:var(--amber); border-color:rgba(245,166,35,0.3); background:rgba(245,166,35,0.07); }
-.visibility-badge.private { color:var(--red);   border-color:rgba(224,82,82,0.3);  background:rgba(224,82,82,0.07); }
+.visibility-badge.private { color:var(--red); border-color:rgba(224,82,82,0.3); background:rgba(224,82,82,0.07); }
 </style>
 
 {% endblock %}

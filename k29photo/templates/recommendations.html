@@ -19,7 +19,12 @@
     <div class="user-card">
       {# Πληροφορίες χρήστη και αριθμό κοινών φίλων #}
       <div class="user-info">
-        <strong>{{ u.full_name }}</strong>
+        <strong>
+          <a href="{{ url_for('main.user_profile', user_id=u.user_id) }}"
+             style="color: var(--text); text-decoration: none;">
+            {{ u.full_name }}
+          </a>
+        </strong>
         <span class="meta">{{ u.hometown or '' }} &bull; {{ u.mutual_count }} mutual connection{% if u.mutual_count != 1 %}s{% endif %}</span>
       </div>
       {# Κουμπί για να τον ακολουθήσουμε #}

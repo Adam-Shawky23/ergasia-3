@@ -8,6 +8,7 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,600;1,400&family=Outfit:wght@300;400;500;600&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+  <meta name="theme-color" content="#0a0a0b">
 </head>
 <body>
 
@@ -29,7 +30,6 @@
       <a href="{{ url_for('friends.friends_list') }}">Friends</a>
       <a href="{{ url_for('recommendations.recommendations') }}">For You</a>
 
-      <!-- Notifications -->
       <a href="{{ url_for('main.notifications') }}" class="notif-link">
         Notifications
         {% if session.unread_count and session.unread_count > 0 %}
@@ -37,7 +37,6 @@
         {% endif %}
       </a>
 
-      <!-- Profile link -->
       <a href="{{ url_for('main.user_profile', user_id=session.user_id) }}" class="btn-nav">
         {{ session.user_name.split()[0] }}
       </a>
@@ -50,11 +49,14 @@
 </nav>
 
 <div class="container">
+  {# Only show ERROR messages — suppress success/info toasts #}
   {% with messages = get_flashed_messages(with_categories=true) %}
     {% if messages %}
       <div class="flashes">
         {% for category, message in messages %}
-          <div class="flash flash-{{ category }}">{{ message }}</div>
+          {% if category == 'error' %}
+            <div class="flash flash-error">{{ message }}</div>
+          {% endif %}
         {% endfor %}
       </div>
     {% endif %}

@@ -1,61 +1,60 @@
-{# Σελίδα εγγραφής νέου χρήστη #}
 {% extends 'base.html' %}
-{% block title %}Register — k29photo{% endblock %}
+{% block title %}Register — Pixora{% endblock %}
 
 {% block content %}
-{# Κύριο περιεχόμενο σελίδας εγγραφής #}
-
 <div class="form-page">
-  <h1>Create Account</h1>
-  
-  {# Φόρμα εγγραφής με στοιχεία χρήστη #}
-  <form action="{{ url_for('auth.register') }}" method="post" class="form-card">
-    {# Όνομα και επώνυμο σε δύο στήλες #}
-    <div class="form-row">
-      <label>First Name *
-        <input type="text" name="first_name" class="input" required>
+  <h1>Create account</h1>
+
+  <div class="form-card">
+    <form method="post">
+
+      <div class="form-row">
+        <label>First name
+          <input type="text" name="first_name" class="input" required autofocus>
+        </label>
+        <label>Last name
+          <input type="text" name="last_name" class="input" required>
+        </label>
+      </div>
+
+      <label>Email
+        <input type="email" name="email" class="input" required>
       </label>
-      <label>Last Name *
-        <input type="text" name="last_name" class="input" required>
+
+      <label>Password
+        <input type="password" name="password" class="input" required
+               minlength="6" placeholder="Minimum 6 characters">
       </label>
-    </div>
-    
-    {# Email (υποχρεωτικό) #}
-    <label>Email *
-      <input type="email" name="email" class="input" required>
-    </label>
-    
-    {# Κωδικός (υποχρεωτικό) #}
-    <label>Password *
-      <input type="password" name="password" class="input" required>
-    </label>
-    
-    {# Ημερομηνία γέννησης και φύλο σε δύο στήλες #}
-    <div class="form-row">
-      <label>Date of Birth
-        <input type="date" name="dob" class="input">
+
+      <label>Date of birth
+        <input type="date" name="dob" class="input"
+               max="{{ today }}"
+               min="1900-01-01">
+        <span class="hint">Must be in the past. Optional.</span>
       </label>
-      <label>Gender
+
+      <label>Hometown (optional)
+        <input type="text" name="hometown" class="input" placeholder="e.g. Athens">
+      </label>
+
+      <label>Gender (optional)
         <select name="gender" class="input">
-          <option value="">Prefer not to say</option>
-          <option value="M">Male</option>
+          <option value="">— Select —</option>
           <option value="F">Female</option>
-          <option value="O">Other</option>
+          <option value="M">Male</option>
+          <option value="O">Other / Prefer not to say</option>
         </select>
       </label>
-    </div>
-    
-    {# Πόλη/τόπος κατοικίας #}
-    <label>Hometown
-      <input type="text" name="hometown" class="input" placeholder="e.g. Athens">
-    </label>
-    
-    {# Κουμπί δημιουργίας λογαριασμού #}
-    <button type="submit" class="btn btn-primary">Create Account</button>
-    
-    {# Link για σύνδεση αν έχει ήδη λογαριασμό #}
-    <p class="form-footer">Already have an account? <a href="{{ url_for('auth.login') }}">Login</a></p>
-  </form>
-</div>
 
+      <button type="submit" class="btn btn-primary"
+              style="width:100%; justify-content:center; margin-top:0.5rem; padding:0.75rem;">
+        Create account
+      </button>
+    </form>
+  </div>
+
+  <p class="form-footer">
+    Already have an account? <a href="{{ url_for('auth.login') }}">Log in</a>
+  </p>
+</div>
 {% endblock %}
