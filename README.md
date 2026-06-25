@@ -4,14 +4,13 @@ A full-stack photo-sharing platform built with Flask and PostgreSQL — inspired
 
 pixora-rlag.onrender.com
 
-![Homepage](k29photo/README_photos/Screenshot%202026-06-24%20at%207.25.58%20PM.png)
+![Homepage](README_photos/Screenshot%202026-06-24%20at%207.25.58%20PM.png)
 
-![Browse](k29photo/README_photos/Screenshot%202026-06-24%20at%207.39.55%20PM.png)
+![Browse](README_photos/Screenshot%202026-06-24%20at%207.39.55%20PM.png)
 
-![Photo Detail](k29photo/README_photos/Screenshot%202026-06-24%20at%207.40.30%20PM.png)
+![Photo Detail](README_photos/Screenshot%202026-06-24%20at%207.40.30%20PM.png)
 
-![Top Users](k29photo/README_photos/Screenshot%202026-06-24%20at%207.40.36%20PM.png)
-
+![Top Users](README_photos/Screenshot%202026-06-24%20at%207.40.36%20PM.png)
 
 What is Pixora?
 Pixora is a photo-sharing web portal where users can upload, organise, and discover photography. It supports public and private albums, a close-friends sharing system, notifications, tag-based discovery, personalised recommendations, and full user profiles — all backed by a PostgreSQL database with raw SQL queries (no ORM).
